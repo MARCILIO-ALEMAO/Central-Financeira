@@ -209,6 +209,60 @@ function renderDashboard() {
             });
         }
     }
+
+    // === MÓDULO CARTÕES ===
+    const listaCartoes = document.getElementById('lista-cartoes');
+    if (listaCartoes) {
+        listaCartoes.innerHTML = ''; // Limpa a lista antes de popular
+        db.cartoes.forEach(c => {
+            listaCartoes.innerHTML += `
+                <div class="flex justify-between border-b border-slate-700 pb-2">
+                    <span>${c.nome_cartao}</span>
+                    <span class="font-bold text-red-400">${formatCurrency(c.limite_utilizado)}</span>
+                </div>
+            `;
+        });
+    }
+
+    // === MÓDULO CALENDÁRIO ===
+    const listaCal = document.getElementById('lista-calendario');
+    if (listaCal) {
+        listaCal.innerHTML = ''; // Limpa a lista antes de popular
+        const proxVencimentos = [...db.contasPagar].sort((a,b) => new Date(a.data_vencimento) - new Date(b.data_vencimento));
+        proxVencimentos.slice(0, 3).forEach(c => {
+            listaCal.innerHTML += `
+                <li class="flex justify-between bg-slate-800 p-3 rounded">
+                    <span>${c.descricao}</span>
+                    <span class="text-xs">${formatDate(c.data_vencimento)}</span>
+                </li>
+            `;
+        });
+    }
+
+    // === MÓDULO RELATÓRIOS (CHART.JS) ===
+    const canvasPatrimonio = document.getElementById('graficoPatrimonio');
+    if (canvasPatrimonio) {
+        const ctx = canvasPatrimonio.getContext('2d');
+        
+        // Destrói o gráfico anterior caso exista para evitar sobreposição ao recarregar
+        if (window.chartPatrimonio) {
+            window.chartPatrimonio.destroy();
+        }
+        
+        window.chartPatrimonio = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                datasets: [{
+                    label: 'Patrimônio',
+                    data: [120000, 135000, 140000, 155000, 170000, patrimonioLiquido],
+                    borderColor: '#3b82f6',
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
 }
 
 // === CONTROLE DO MODAL MOVIMENTAÇÃO ===
