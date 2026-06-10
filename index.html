@@ -45,13 +45,11 @@
                 <i class="ph ph-wallet text-3xl text-primary"></i>
                 <span class="text-xl font-bold text-white">Financeiro</span>
             </div>
-            
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
                 <a href="#" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg">
                     <i class="ph ph-squares-four text-xl"></i><span class="font-medium">Dashboard</span>
                 </a>
             </nav>
-            
             <div class="p-4 border-t border-slate-800 flex items-center gap-3 px-4 py-2">
                 <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">M</div>
                 <div class="flex-1 overflow-hidden">
@@ -61,11 +59,17 @@
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col h-full overflow-hidden">
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
             <div class="flex-1 p-6 overflow-y-auto">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Dashboard Geral</h2>
-                    <p class="text-slate-400">Resumo consolidado do seu patrimônio.</p>
+                <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Dashboard Geral</h2>
+                        <p class="text-slate-400">Resumo consolidado do seu patrimônio.</p>
+                    </div>
+                    <button onclick="abrirModalMovimentacao()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
+                        <i class="ph ph-plus-circle text-xl"></i>
+                        Nova Movimentação
+                    </button>
                 </header>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -76,7 +80,6 @@
                         </div>
                         <h3 id="card-saldo" class="text-2xl font-bold text-white">R$ 0,00</h3>
                     </div>
-                    
                     <div class="bg-card p-6 rounded-xl border border-slate-700">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-slate-400 font-medium">Investimentos</p>
@@ -84,7 +87,6 @@
                         </div>
                         <h3 id="card-investimentos" class="text-2xl font-bold text-white">R$ 0,00</h3>
                     </div>
-
                     <div class="bg-card p-6 rounded-xl border border-slate-700">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-slate-400 font-medium">Faturas em Aberto</p>
@@ -92,7 +94,6 @@
                         </div>
                         <h3 id="card-cartoes" class="text-2xl font-bold text-white">R$ 0,00</h3>
                     </div>
-
                     <div class="bg-card p-6 rounded-xl border border-slate-700 bg-gradient-to-br from-card to-slate-800">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-slate-400 font-medium">Patrimônio Líquido</p>
@@ -103,7 +104,7 @@
                 </div>
 
                 <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
-                    <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                    <div class="p-6 border-b border-slate-700">
                         <h3 class="text-lg font-bold text-white">Últimas Movimentações</h3>
                     </div>
                     <div class="overflow-x-auto">
@@ -123,6 +124,59 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div id="modal-movimentacao" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
+        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white">Nova Movimentação</h3>
+                <button onclick="fecharModalMovimentacao()" class="text-slate-400 hover:text-white">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="form-movimentacao" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Tipo</label>
+                        <select id="mov-tipo" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                            <option value="Entrada">Entrada (Receita)</option>
+                            <option value="Saída">Saída (Despesa)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Valor (R$)</label>
+                        <input type="number" id="mov-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Descrição</label>
+                    <input type="text" id="mov-descricao" required placeholder="Ex: Cachê MPCAST, Peças Trailer ACM..." class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Data</label>
+                        <input type="date" id="mov-data" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none [color-scheme:dark]">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Categoria</label>
+                        <select id="mov-categoria" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                            <option value="Serviços">Serviços / Jobs</option>
+                            <option value="Equipamentos">Equipamentos</option>
+                            <option value="Veículos">Veículos / Combustível</option>
+                            <option value="Lazer">Lazer / Viagens</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-salvar" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 transition flex justify-center items-center gap-2">
+                    Salvar Registro
+                </button>
+            </form>
+        </div>
     </div>
 
     <script src="app.js"></script>
