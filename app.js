@@ -3,16 +3,23 @@ let db = {};
 
 window.onload = function () {
     const buttonDiv = document.getElementById("buttonDiv");
-    buttonDiv.innerHTML = `
-        <button onclick="handleCredentialResponse()" class="bg-white text-slate-800 font-medium py-2 px-4 rounded flex items-center gap-2 hover:bg-slate-100 transition w-full justify-center">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-            Entrar com Google
-        </button>
-    `;
+    if(buttonDiv) {
+        buttonDiv.innerHTML = `
+            <button onclick="handleCredentialResponse()" class="bg-white text-slate-800 font-medium py-2 px-4 rounded flex items-center gap-2 hover:bg-slate-100 transition w-full justify-center">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                Entrar com Google
+            </button>
+        `;
+    }
 
-    document.getElementById('mov-data').valueAsDate = new Date();
-    document.getElementById('form-movimentacao').addEventListener('submit', salvarMovimentacao);
-    document.getElementById('form-aporte').addEventListener('submit', salvarAporte);
+    const movDataInput = document.getElementById('mov-data');
+    if (movDataInput) movDataInput.valueAsDate = new Date();
+    
+    const formMovimentacao = document.getElementById('form-movimentacao');
+    if (formMovimentacao) formMovimentacao.addEventListener('submit', salvarMovimentacao);
+    
+    const formAporte = document.getElementById('form-aporte');
+    if (formAporte) formAporte.addEventListener('submit', salvarAporte);
 };
 
 // === SISTEMA DE NAVEGAÇÃO SPA ===
@@ -22,7 +29,8 @@ function changeScreen(screenId) {
     screens.forEach(screen => screen.classList.remove('active'));
 
     // 2. Mostra a tela alvo
-    document.getElementById(`screen-${screenId}`).classList.add('active');
+    const targetScreen = document.getElementById(`screen-${screenId}`);
+    if (targetScreen) targetScreen.classList.add('active');
 
     // 3. Atualiza os estilos dos botões no menu
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -127,7 +135,7 @@ function renderDashboard() {
 
     // 5. Gráfico (Tela Relatórios)
     const canvasPatrimonio = document.getElementById('graficoPatrimonio');
-    if(canvasPatrimonio) {
+    if(canvasPatrimonio && typeof Chart !== 'undefined') {
         const ctx = canvasPatrimonio.getContext('2d');
         if (window.meuGrafico) window.meuGrafico.destroy();
         window.meuGrafico = new Chart(ctx, {
@@ -142,31 +150,39 @@ function renderDashboard() {
 
 // === CONTROLE DO MODAL MOVIMENTAÇÃO ===
 function abrirModalMovimentacao() {
-    document.getElementById('modal-movimentacao').classList.remove('hidden');
+    const modal = document.getElementById('modal-movimentacao');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function fecharModalMovimentacao() {
-    document.getElementById('modal-movimentacao').classList.add('hidden');
-    document.getElementById('form-movimentacao').reset();
-    document.getElementById('mov-data').valueAsDate = new Date();
+    const modal = document.getElementById('modal-movimentacao');
+    if (modal) modal.classList.add('hidden');
+    
+    const form = document.getElementById('form-movimentacao');
+    if (form) form.reset();
+    
+    const movDataInput = document.getElementById('mov-data');
+    if (movDataInput) movDataInput.valueAsDate = new Date();
 }
 
 async function salvarMovimentacao(event) {
     event.preventDefault();
     const btnSalvar = document.getElementById('btn-salvar');
-    btnSalvar.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-xl"></i> Salvando...';
-    btnSalvar.disabled = true;
+    if (btnSalvar) {
+        btnSalvar.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-xl"></i> Salvando...';
+        btnSalvar.disabled = true;
+    }
 
     const novaMovimentacao = {
         id_movimentacao: 'MOV' + Date.now(),
         id_usuario: 'USR001',
         id_conta: 'CTA001',
         id_cartao: '',
-        tipo: document.getElementById('mov-tipo').value,
-        categoria: document.getElementById('mov-categoria').value,
-        valor: parseFloat(document.getElementById('mov-valor').value),
-        data: document.getElementById('mov-data').value,
-        descricao: document.getElementById('mov-descricao').value,
+        tipo: document.getElementById('mov-tipo') ? document.getElementById('mov-tipo').value : '',
+        categoria: document.getElementById('mov-categoria') ? document.getElementById('mov-categoria').value : '',
+        valor: parseFloat(document.getElementById('mov-valor') ? document.getElementById('mov-valor').value : 0),
+        data: document.getElementById('mov-data') ? document.getElementById('mov-data').value : '',
+        descricao: document.getElementById('mov-descricao') ? document.getElementById('mov-descricao').value : '',
         id_documento: ''
     };
 
@@ -176,31 +192,49 @@ async function salvarMovimentacao(event) {
         const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.json();
         if (result.status === 'success') {
+            if(!db.movimentacoes) db.movimentacoes = [];
             db.movimentacoes.push(novaMovimentacao);
             renderDashboard();
             fecharModalMovimentacao();
-        } else { alert('Erro: ' + result.message); }
-    } catch (error) { alert('Falha ao enviar.'); }
-    finally { btnSalvar.innerHTML = 'Salvar Registro'; btnSalvar.disabled = false; }
+        } else { 
+            alert('Erro: ' + result.message); 
+        }
+    } catch (error) { 
+        alert('Falha ao enviar.'); 
+    } finally { 
+        if (btnSalvar) {
+            btnSalvar.innerHTML = 'Salvar Registro'; 
+            btnSalvar.disabled = false; 
+        }
+    }
 }
 
 // === CONTROLE DO MODAL APORTES ===
 function abrirModalAporte() {
     const select = document.getElementById('aporte-cofrinho');
-    select.innerHTML = '<option value="" disabled selected>Selecione...</option>';
-    db.cofrinhos.forEach(cof => { select.innerHTML += `<option value="${cof.id_cofrinho}">${cof.nome}</option>`; });
-    document.getElementById('modal-aporte').classList.remove('hidden');
+    if (select) {
+        select.innerHTML = '<option value="" disabled selected>Selecione...</option>';
+        if(db.cofrinhos) {
+            db.cofrinhos.forEach(cof => { select.innerHTML += `<option value="${cof.id_cofrinho}">${cof.nome}</option>`; });
+        }
+    }
+    const modal = document.getElementById('modal-aporte');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function fecharModalAporte() { 
-    document.getElementById('modal-aporte').classList.add('hidden'); 
+    const modal = document.getElementById('modal-aporte');
+    if (modal) modal.classList.add('hidden'); 
 }
 
 async function salvarAporte(event) {
     event.preventDefault();
     const idCofrinho = document.getElementById('aporte-cofrinho').value;
     const valorAporte = parseFloat(document.getElementById('aporte-valor').value);
+    
+    if(!db.cofrinhos) return;
     const cofrinho = db.cofrinhos.find(c => c.id_cofrinho === idCofrinho);
+    if(!cofrinho) return;
     
     const payload = {
         action: 'updateRow', sheet: 'Cofrinhos', email: 'marcilio@example.com',
@@ -216,7 +250,9 @@ async function salvarAporte(event) {
             renderDashboard();
             fecharModalAporte();
         }
-    } catch (error) { alert('Erro ao atualizar.'); }
+    } catch (error) { 
+        alert('Erro ao atualizar.'); 
+    }
 }
 
 // === LÓGICA DE BAIXA AUTOMÁTICA (CONTAS A PAGAR) ===
