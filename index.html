@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central Financeira</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -21,9 +20,7 @@
             }
         }
     </script>
-    
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="bg-darker text-slate-300 font-sans h-screen flex overflow-hidden antialiased">
@@ -32,14 +29,17 @@
         <div class="bg-card p-8 rounded-xl shadow-2xl border border-slate-700 w-96 text-center">
             <i class="ph ph-wallet text-6xl text-primary mb-4"></i>
             <h1 class="text-2xl font-bold text-white mb-2">Central Financeira</h1>
-            <p class="text-sm text-slate-400 mb-8">Faça login para acessar seu patrimônio</p>
-            
+            <p class="text-sm text-slate-400 mb-8">Acesse seu painel de controle</p>
             <div id="buttonDiv" class="flex justify-center"></div>
         </div>
     </div>
 
+    <div id="loading-screen" class="fixed inset-0 z-40 bg-darker/90 flex flex-col items-center justify-center hidden">
+        <i class="ph ph-spinner-gap text-4xl text-primary animate-spin mb-4"></i>
+        <p class="text-white font-medium">Sincronizando banco de dados...</p>
+    </div>
+
     <div id="app-screen" class="flex w-full h-full hidden">
-        
         <aside class="w-64 bg-card border-r border-slate-800 flex flex-col hidden md:flex">
             <div class="p-6 border-b border-slate-800 flex items-center gap-3">
                 <i class="ph ph-wallet text-3xl text-primary"></i>
@@ -47,59 +47,80 @@
             </div>
             
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg transition-colors">
-                    <i class="ph ph-squares-four text-xl"></i>
-                    <span class="font-medium">Dashboard</span>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg">
+                    <i class="ph ph-squares-four text-xl"></i><span class="font-medium">Dashboard</span>
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-                    <i class="ph ph-arrows-left-right text-xl"></i>
-                    <span class="font-medium">Movimentações</span>
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-                    <i class="ph ph-credit-card text-xl"></i>
-                    <span class="font-medium">Cartões</span>
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-                    <i class="ph ph-piggy-bank text-xl"></i>
-                    <span class="font-medium">Cofrinhos</span>
-                </a>
-                </nav>
+            </nav>
             
-            <div class="p-4 border-t border-slate-800">
-                <div class="flex items-center gap-3 px-4 py-2">
-                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold" id="user-avatar">M</div>
-                    <div class="flex-1 overflow-hidden">
-                        <p class="text-sm font-medium text-white truncate">Marcílio Silva</p>
-                        <a href="#" onclick="logout()" class="text-xs text-slate-500 hover:text-red-400">Sair</a>
-                    </div>
+            <div class="p-4 border-t border-slate-800 flex items-center gap-3 px-4 py-2">
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">M</div>
+                <div class="flex-1 overflow-hidden">
+                    <p class="text-sm font-medium text-white truncate">Marcílio Silva</p>
+                    <a href="#" onclick="logout()" class="text-xs text-slate-500 hover:text-red-400">Sair</a>
                 </div>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col h-full overflow-hidden">
-            <header class="md:hidden bg-card border-b border-slate-800 p-4 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <i class="ph ph-wallet text-2xl text-primary"></i>
-                    <span class="font-bold text-white">Financeiro</span>
-                </div>
-                <button class="text-slate-300"><i class="ph ph-list text-2xl"></i></button>
-            </header>
-
-            <div class="flex-1 p-6 overflow-y-auto" id="main-content">
+            <div class="flex-1 p-6 overflow-y-auto">
                 <header class="mb-8">
                     <h2 class="text-2xl font-bold text-white">Dashboard Geral</h2>
-                    <p class="text-slate-400">Resumo atualizado do seu patrimônio e obrigações.</p>
+                    <p class="text-slate-400">Resumo consolidado do seu patrimônio.</p>
                 </header>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-card p-6 rounded-xl border border-slate-700">
                         <div class="flex justify-between items-start mb-4">
-                            <p class="text-slate-400 font-medium">Patrimônio Total</p>
-                            <i class="ph ph-bank text-xl text-emerald-400"></i>
+                            <p class="text-slate-400 font-medium">Saldo Disponível</p>
+                            <i class="ph ph-wallet text-xl text-blue-400"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-white">R$ 0,00</h3>
+                        <h3 id="card-saldo" class="text-2xl font-bold text-white">R$ 0,00</h3>
                     </div>
+                    
+                    <div class="bg-card p-6 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-slate-400 font-medium">Investimentos</p>
+                            <i class="ph ph-trend-up text-xl text-emerald-400"></i>
+                        </div>
+                        <h3 id="card-investimentos" class="text-2xl font-bold text-white">R$ 0,00</h3>
                     </div>
+
+                    <div class="bg-card p-6 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-slate-400 font-medium">Faturas em Aberto</p>
+                            <i class="ph ph-credit-card text-xl text-red-400"></i>
+                        </div>
+                        <h3 id="card-cartoes" class="text-2xl font-bold text-white">R$ 0,00</h3>
+                    </div>
+
+                    <div class="bg-card p-6 rounded-xl border border-slate-700 bg-gradient-to-br from-card to-slate-800">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-slate-400 font-medium">Patrimônio Líquido</p>
+                            <i class="ph ph-bank text-xl text-purple-400"></i>
+                        </div>
+                        <h3 id="card-patrimonio" class="text-2xl font-bold text-white">R$ 0,00</h3>
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">Últimas Movimentações</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-800/50 text-slate-400 text-sm border-b border-slate-700">
+                                    <th class="p-4 font-medium">Data</th>
+                                    <th class="p-4 font-medium">Descrição</th>
+                                    <th class="p-4 font-medium">Categoria</th>
+                                    <th class="p-4 font-medium text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-movimentacoes" class="text-sm divide-y divide-slate-700/50">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
