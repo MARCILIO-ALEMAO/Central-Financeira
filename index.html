@@ -180,12 +180,27 @@
                 </div>
             </div>
 
-            <div id="screen-pagamentos" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Contas a Pagar / Receber</h2>
+            <div id="screen-movimentacoes" class="screen-content">
+                <header class="mb-6 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-white">Histórico de Movimentações</h2>
+                    <button onclick="abrirModalMovimentacao()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
+                        <i class="ph ph-plus-circle text-xl"></i>
+                        Nova
+                    </button>
+                </header>
                 <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <tbody id="tabela-contas-pagar" class="text-sm divide-y divide-slate-700">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-800/50 text-slate-400 text-sm border-b border-slate-700">
+                                    <th class="p-4 font-medium">Data</th>
+                                    <th class="p-4 font-medium">Descrição</th>
+                                    <th class="p-4 font-medium">Categoria</th>
+                                    <th class="p-4 font-medium">Conta/Cartão</th>
+                                    <th class="p-4 font-medium text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-movimentacoes-completa" class="text-sm divide-y divide-slate-700/50">
                                 </tbody>
                         </table>
                     </div>
@@ -194,14 +209,73 @@
 
             <div id="screen-cartoes" class="screen-content">
                 <h2 class="text-2xl font-bold text-white mb-6">Cartões de Crédito</h2>
-                <div id="lista-cartoes-detalhada" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="lista-cartoes-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     </div>
+            </div>
+
+            <div id="screen-contas" class="screen-content">
+                <h2 class="text-2xl font-bold text-white mb-6">Contas Bancárias</h2>
+                <div id="lista-contas-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+
+            <div id="screen-pagamentos" class="screen-content">
+                <h2 class="text-2xl font-bold text-white mb-6">Contas a Pagar e Receber</h2>
+                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <tbody id="tabela-contas-pagar" class="text-sm divide-y divide-slate-700">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-investimentos" class="screen-content">
+                <h2 class="text-2xl font-bold text-white mb-6">Meus Investimentos</h2>
+                <div id="lista-investimentos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+
+            <div id="screen-cofrinhos" class="screen-content">
+                <header class="mb-6 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-white">Meus Cofrinhos</h2>
+                    <button onclick="abrirModalAporte()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
+                        <i class="ph ph-piggy-bank text-xl"></i>
+                        Novo Aporte
+                    </button>
+                </header>
+                <div id="lista-cofrinhos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+
+            <div id="screen-calendario" class="screen-content">
+                <h2 class="text-2xl font-bold text-white mb-6">Calendário Financeiro</h2>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 text-center py-12">
+                    <i class="ph ph-calendar-blank text-6xl text-slate-500 mb-4"></i>
+                    <p class="text-slate-400">Visualização de calendário em desenvolvimento.</p>
+                </div>
+            </div>
+
+            <div id="screen-documentos" class="screen-content">
+                <h2 class="text-2xl font-bold text-white mb-6">Documentos e Comprovantes</h2>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 text-center py-12">
+                    <i class="ph ph-files text-6xl text-slate-500 mb-4"></i>
+                    <p class="text-slate-400">Repositório de documentos em desenvolvimento.</p>
+                </div>
             </div>
 
             <div id="screen-relatorios" class="screen-content">
                 <h2 class="text-2xl font-bold text-white mb-6">Relatórios de Evolução</h2>
                 <div class="bg-card p-6 rounded-xl border border-slate-700">
                     <canvas id="graficoPatrimonio" class="w-full h-80"></canvas>
+                </div>
+            </div>
+
+            <div id="screen-configuracoes" class="screen-content">
+                <h2 class="text-2xl font-bold text-white mb-6">Configurações do Sistema</h2>
+                <div class="bg-card p-6 rounded-xl border border-slate-700">
+                    <p class="text-slate-400">Preferências e configurações em desenvolvimento.</p>
                 </div>
             </div>
 
