@@ -79,7 +79,6 @@ async function fetchAllData() {
 
 // === RENDERIZAÇÃO ===
 function renderDashboard() {
-    // Se o backend mockar arrays vazios em caso de não existência:
     db.contas = db.contas || [];
     db.investimentos = db.investimentos || [];
     db.cartoes = db.cartoes || [];
@@ -213,7 +212,7 @@ function renderDashboard() {
     // === MÓDULO CARTÕES ===
     const listaCartoes = document.getElementById('lista-cartoes');
     if (listaCartoes) {
-        listaCartoes.innerHTML = ''; // Limpa a lista antes de popular
+        listaCartoes.innerHTML = ''; 
         db.cartoes.forEach(c => {
             listaCartoes.innerHTML += `
                 <div class="flex justify-between border-b border-slate-700 pb-2">
@@ -227,7 +226,7 @@ function renderDashboard() {
     // === MÓDULO CALENDÁRIO ===
     const listaCal = document.getElementById('lista-calendario');
     if (listaCal) {
-        listaCal.innerHTML = ''; // Limpa a lista antes de popular
+        listaCal.innerHTML = ''; 
         const proxVencimentos = [...db.contasPagar].sort((a,b) => new Date(a.data_vencimento) - new Date(b.data_vencimento));
         proxVencimentos.slice(0, 3).forEach(c => {
             listaCal.innerHTML += `
@@ -244,7 +243,6 @@ function renderDashboard() {
     if (canvasPatrimonio) {
         const ctx = canvasPatrimonio.getContext('2d');
         
-        // Destrói o gráfico anterior caso exista para evitar sobreposição ao recarregar
         if (window.chartPatrimonio) {
             window.chartPatrimonio.destroy();
         }
@@ -344,77 +342,18 @@ async function salvarAporte(event) {
     } catch (error) { alert('Erro ao atualizar.'); }
 }
 
-// === LÓGICA DE BAIXA AUTOMÁTICA (CONTAS A PAGAR) - VIA FRONTEND ===
-async function liquidarConta(idContaPagar) {
-    // 1. Encontra a conta no banco de dados local
-    const conta = db.contasPagar.find(c => c.id_conta_pagar === idContaPagar);
-    
-    if (!conta) {
-        alert('Conta não encontrada!');
-        return;
-    }
-    
-    // 2. Prepara a nova Movimentação de Saída
-    const novaMov = {
-        id_movimentacao: 'MOV' + Date.now(),
-        id_usuario: 'USR001',
-        id_conta: 'CTA001', // Assume a conta principal
-        id_cartao: '',
-        tipo: 'Saída',
-        categoria: conta.categoria || 'Outros', // Utiliza a categoria da conta
-        valor: parseFloat(conta.valor),
-        data: new Date().toISOString().split('T')[0],
-        descricao: 'PAGAMENTO: ' + conta.descricao,
-        id_documento: ''
-    };
-
-    const payloadInsert = {
-        action: 'insertRow', 
-        sheet: 'Movimentacoes', 
-        email: 'marcilio@example.com', 
-        data: novaMov
-    };
-
-    // 3. Prepara a atualização de Status para "Pago" na aba ContasPagar
-    const payloadUpdate = {
-        action: 'updateRow', 
-        sheet: 'ContasPagar', 
-        email: 'marcilio@example.com',
-        idKey: 'id_conta_pagar', 
-        idValue: idContaPagar,
-        data: { status: 'Pago' }
-    };
-
-    try {
-        // Dispara as requisições
-        const [resInsert, resUpdate] = await Promise.all([
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadInsert) }),
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadUpdate) })
-        ]);
-
-        const resultInsert = await resInsert.json();
-        const resultUpdate = await resUpdate.json();
-
-        if (resultInsert.status === 'success' && resultUpdate.status === 'success') {
-            // Atualiza os dados locais
-            db.movimentacoes.push(novaMov);
-            conta.status = 'Pago';
-            
-            // Re-renderiza o painel
-            renderDashboard();
-            alert(`Conta "${conta.descricao}" liquidada com sucesso!`);
-        } else {
-            alert('Aviso: Houve uma falha ao liquidar a conta no servidor.');
-            console.error('Inserção:', resultInsert, 'Atualização:', resultUpdate);
-        }
-    } catch (error) {
-        alert('Falha na comunicação com o servidor ao liquidar a conta.');
-        console.error(error);
-    }
-}
-
-// === NOVA LÓGICA DE BAIXA AUTOMÁTICA (AÇÃO ATÔMICA NO BACKEND) ===
+// === LÓGICA DE BAIXA AUTOMÁTICA (CONTAS A PAGAR) ===
 async function pagarConta(idContaPagar) {
+    // Captura o evento global para garantir que o botão pode ser editado
+    // mesmo sem passar o (event) no onclick do HTML
+    const evt = window.event;
+    let btn = null;
+    if (evt) {
+        btn = evt.currentTarget || evt.target;
+        btn.disabled = true;
+        btn.innerText = 'Processando...';
+    }
+
     const payload = {
         action: 'liquidarConta',
         email: 'marcilio@example.com',
@@ -429,12 +368,19 @@ async function pagarConta(idContaPagar) {
         const result = await response.json();
         
         if (result.status === 'success') {
-            alert('Conta paga com sucesso!');
-            fetchAllData(); // Recarrega o dashboard para atualizar saldos e listas
+            await fetchAllData(); // Recarrega tudo do Sheets
         } else {
             alert('Erro: ' + result.message);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = 'Pagar';
+            }
         }
     } catch (error) {
         alert('Falha na comunicação com o servidor.');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Pagar';
+        }
     }
 }
