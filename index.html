@@ -157,7 +157,19 @@
                                 </tr>
                             </thead>
                             <tbody id="tabela-movimentacoes" class="text-sm divide-y divide-slate-700/50">
-                                </tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden mt-6">
+                    <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">Contas a Pagar (Pendentes)</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <tbody id="tabela-contas-pagar" class="text-sm divide-y divide-slate-700">
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -194,209 +206,12 @@
                             </button>
                         </div>
                         <div id="lista-cofrinhos" class="space-y-6 overflow-y-auto max-h-64 pr-2">
-                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="screen-movimentacoes" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Movimentações</h2>
-                    <p class="text-slate-400">Lançamento de Entradas/Saídas, Categorização e Filtros.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-cartoes" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Cartões de Crédito</h2>
-                    <p class="text-slate-400">Gestão de faturas, limites e vencimentos.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-contas" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Contas Bancárias</h2>
-                    <p class="text-slate-400">Gestão de saldo, liquidez e transferências.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-pagamentos" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Contas a Pagar / Receber</h2>
-                    <p class="text-slate-400">Gestão de fluxo futuro e recorrências.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-investimentos" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Investimentos</h2>
-                    <p class="text-slate-400">Acompanhamento de ativos (CDB, Ações, Cripto) e rentabilidade.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-cofrinhos" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Gestão de Cofrinhos</h2>
-                    <p class="text-slate-400">Criação de metas independentes e histórico de atingimento.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-calendario" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Calendário Financeiro</h2>
-                    <p class="text-slate-400">Visão cronológica e sincronização via Google Calendar.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-documentos" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Documentos</h2>
-                    <p class="text-slate-400">Arquivo digital e upload de comprovantes (PDF/IMG).</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-relatorios" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Relatórios</h2>
-                    <p class="text-slate-400">Inteligência de dados, gráficos por categoria e evolução patrimonial.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-            <div id="screen-configuracoes" class="screen-content">
-                <header class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Configurações</h2>
-                    <p class="text-slate-400">Ajuste da Meta Principal, categorias e permissões de usuários.</p>
-                </header>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
-                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <div id="modal-movimentacao" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-white">Nova Movimentação</h3>
-                <button onclick="fecharModalMovimentacao()" class="text-slate-400 hover:text-white">
-                    <i class="ph ph-x text-2xl"></i>
-                </button>
-            </div>
-            
-            <form id="form-movimentacao" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Tipo</label>
-                        <select id="mov-tipo" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                            <option value="Entrada">Entrada (Receita)</option>
-                            <option value="Saída">Saída (Despesa)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Valor (R$)</label>
-                        <input type="number" id="mov-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Descrição</label>
-                    <input type="text" id="mov-descricao" required placeholder="Ex: Cachê, Peças..." class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Data</label>
-                        <input type="date" id="mov-data" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none [color-scheme:dark]">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Categoria</label>
-                        <select id="mov-categoria" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                            <option value="Serviços">Serviços / Jobs</option>
-                            <option value="Equipamentos">Equipamentos</option>
-                            <option value="Veículos">Veículos / Combustível</option>
-                            <option value="Lazer">Lazer / Viagens</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" id="btn-salvar" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 transition flex justify-center items-center gap-2">
-                    Salvar Registro
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <div id="modal-aporte" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-sm shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-white">Novo Aporte</h3>
-                <button onclick="fecharModalAporte()" class="text-slate-400 hover:text-white">
-                    <i class="ph ph-x text-2xl"></i>
-                </button>
-            </div>
-            
-            <form id="form-aporte" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Selecione o Cofrinho</label>
-                    <select id="aporte-cofrinho" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Valor do Aporte (R$)</label>
-                    <input type="number" id="aporte-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
-                </div>
-                <button type="submit" id="btn-salvar-aporte" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg mt-4 transition flex justify-center items-center gap-2">
-                    Guardar Dinheiro
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <div id="modal-conta-pagar" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
-            <h3 class="text-xl font-bold text-white mb-6">Nova Conta a Pagar</h3>
-            <form id="form-conta-pagar" class="space-y-4">
-                <input type="text" id="cp-descricao" placeholder="Descrição" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 outline-none">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="cp-valor" placeholder="Valor" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 outline-none">
-                    <input type="date" id="cp-vencimento" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 [color-scheme:dark]">
-                </div>
-                <select id="cp-recorrencia" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 outline-none">
-                    <option value="Única">Única</option>
-                    <option value="Mensal">Mensal</option>
-                </select>
-                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mt-4">Salvar Conta</button>
-            </form>
-        </div>
+            </main>
     </div>
 
     <script src="app.js"></script>
