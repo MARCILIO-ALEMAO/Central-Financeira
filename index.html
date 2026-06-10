@@ -61,6 +61,7 @@
 
         <main class="flex-1 flex flex-col h-full overflow-hidden relative">
             <div class="flex-1 p-6 overflow-y-auto">
+                
                 <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-white">Dashboard Geral</h2>
@@ -122,10 +123,8 @@
                         </table>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
                     
                     <div class="bg-card p-6 rounded-xl border border-slate-700 lg:col-span-1 bg-gradient-to-br from-slate-800 to-slate-900">
                         <div class="flex justify-between items-center mb-4">
@@ -153,13 +152,19 @@
                             <h3 class="text-lg font-bold text-white flex items-center gap-2">
                                 <i class="ph ph-piggy-bank text-emerald-400"></i> Meus Cofrinhos
                             </h3>
-                            <button class="text-sm text-primary hover:text-white transition">Gerenciar</button>
+                            <button onclick="abrirModalAporte()" class="text-sm bg-slate-800 hover:bg-slate-700 text-white py-1 px-3 rounded transition flex items-center gap-1">
+                                <i class="ph ph-plus"></i> Novo Aporte
+                            </button>
                         </div>
                         
                         <div id="lista-cofrinhos" class="space-y-6 overflow-y-auto max-h-64 pr-2">
                             </div>
                     </div>
                 </div>
+                </div>
+        </main>
+    </div>
+
     <div id="modal-movimentacao" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
         <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-6">
@@ -208,6 +213,32 @@
 
                 <button type="submit" id="btn-salvar" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 transition flex justify-center items-center gap-2">
                     Salvar Registro
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-aporte" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
+        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white">Novo Aporte</h3>
+                <button onclick="fecharModalAporte()" class="text-slate-400 hover:text-white">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="form-aporte" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Selecione o Cofrinho</label>
+                    <select id="aporte-cofrinho" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
+                        </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Valor do Aporte (R$)</label>
+                    <input type="number" id="aporte-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
+                </div>
+                <button type="submit" id="btn-salvar-aporte" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg mt-4 transition flex justify-center items-center gap-2">
+                    Guardar Dinheiro
                 </button>
             </form>
         </div>
