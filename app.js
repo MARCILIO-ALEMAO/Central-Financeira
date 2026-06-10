@@ -86,6 +86,7 @@ function renderDashboard() {
     db.movimentacoes = db.movimentacoes || [];
     db.configuracoes = db.configuracoes || [];
     db.cofrinhos = db.cofrinhos || [];
+    db.contasPagar = db.contasPagar || []; // Garantindo que exista para a nova função
 
     const saldoTotal = db.contas.reduce((acc, conta) => acc + (parseFloat(conta.saldo_atual) || 0), 0);
     const invTotal = db.investimentos.reduce((acc, inv) => acc + (parseFloat(inv.valor_atual) || 0), 0);
@@ -253,4 +254,73 @@ async function salvarAporte(event) {
             fecharModalAporte();
         }
     } catch (error) { alert('Erro ao atualizar.'); }
+}
+
+// === LÓGICA DE BAIXA AUTOMÁTICA (CONTAS A PAGAR) ===
+async function liquidarConta(idContaPagar) {
+    // 1. Encontra a conta no banco de dados local
+    const conta = db.contasPagar.find(c => c.id_conta_pagar === idContaPagar);
+    
+    if (!conta) {
+        alert('Conta não encontrada!');
+        return;
+    }
+    
+    // 2. Prepara a nova Movimentação de Saída
+    const novaMov = {
+        id_movimentacao: 'MOV' + Date.now(),
+        id_usuario: 'USR001',
+        id_conta: 'CTA001', // Assume a conta principal
+        id_cartao: '',
+        tipo: 'Saída',
+        categoria: conta.categoria || 'Outros', // Utiliza a categoria da conta
+        valor: parseFloat(conta.valor),
+        data: new Date().toISOString().split('T')[0],
+        descricao: 'PAGAMENTO: ' + conta.descricao,
+        id_documento: ''
+    };
+
+    const payloadInsert = {
+        action: 'insertRow', 
+        sheet: 'Movimentacoes', 
+        email: 'marcilio@example.com', 
+        data: novaMov
+    };
+
+    // 3. Prepara a atualização de Status para "Pago" na aba ContasPagar
+    const payloadUpdate = {
+        action: 'updateRow', 
+        sheet: 'ContasPagar', 
+        email: 'marcilio@example.com',
+        idKey: 'id_conta_pagar', 
+        idValue: idContaPagar,
+        data: { status: 'Pago' }
+    };
+
+    try {
+        // Dispara as requisições (Nota: Recomendado fazer a validação atômica no backend futuramente)
+        const [resInsert, resUpdate] = await Promise.all([
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadInsert) }),
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadUpdate) })
+        ]);
+
+        const resultInsert = await resInsert.json();
+        const resultUpdate = await resUpdate.json();
+
+        if (resultInsert.status === 'success' && resultUpdate.status === 'success') {
+            // Atualiza os dados locais
+            db.movimentacoes.push(novaMov);
+            conta.status = 'Pago';
+            
+            // Re-renderiza o painel
+            renderDashboard();
+            alert(`Conta "${conta.descricao}" liquidada com sucesso!`);
+        } else {
+            alert('Aviso: Houve uma falha ao liquidar a conta no servidor.');
+            console.error('Inserção:', resultInsert, 'Atualização:', resultUpdate);
+        }
+    } catch (error) {
+        alert('Falha na comunicação com o servidor ao liquidar a conta.');
+        console.error(error);
+    }
 }
