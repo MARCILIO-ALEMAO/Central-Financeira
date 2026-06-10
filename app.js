@@ -256,7 +256,7 @@ async function salvarAporte(event) {
     } catch (error) { alert('Erro ao atualizar.'); }
 }
 
-// === LÓGICA DE BAIXA AUTOMÁTICA (CONTAS A PAGAR) ===
+// === LÓGICA DE BAIXA AUTOMÁTICA (CONTAS A PAGAR) - VIA FRONTEND ===
 async function liquidarConta(idContaPagar) {
     // 1. Encontra a conta no banco de dados local
     const conta = db.contasPagar.find(c => c.id_conta_pagar === idContaPagar);
@@ -298,7 +298,7 @@ async function liquidarConta(idContaPagar) {
     };
 
     try {
-        // Dispara as requisições (Nota: Recomendado fazer a validação atômica no backend futuramente)
+        // Dispara as requisições
         const [resInsert, resUpdate] = await Promise.all([
             fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadInsert) }),
             fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadUpdate) })
@@ -322,5 +322,31 @@ async function liquidarConta(idContaPagar) {
     } catch (error) {
         alert('Falha na comunicação com o servidor ao liquidar a conta.');
         console.error(error);
+    }
+}
+
+// === NOVA LÓGICA DE BAIXA AUTOMÁTICA (AÇÃO ATÔMICA NO BACKEND) ===
+async function pagarConta(idContaPagar) {
+    const payload = {
+        action: 'liquidarConta',
+        email: 'marcilio@example.com',
+        idContaPagar: idContaPagar
+    };
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            alert('Conta paga com sucesso!');
+            fetchAllData(); // Recarrega o dashboard para atualizar saldos e listas
+        } else {
+            alert('Erro: ' + result.message);
+        }
+    } catch (error) {
+        alert('Falha na comunicação com o servidor.');
     }
 }
