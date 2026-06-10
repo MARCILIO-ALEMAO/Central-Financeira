@@ -79,186 +79,63 @@ async function fetchAllData() {
 
 // === RENDERIZAÇÃO ===
 function renderDashboard() {
+    // Inicialização de segurança para evitar erros caso os dados venham vazios
     db.contas = db.contas || [];
     db.investimentos = db.investimentos || [];
     db.cartoes = db.cartoes || [];
-    db.movimentacoes = db.movimentacoes || [];
-    db.configuracoes = db.configuracoes || [];
-    db.cofrinhos = db.cofrinhos || [];
     db.contasPagar = db.contasPagar || []; 
 
-    const saldoTotal = db.contas.reduce((acc, conta) => acc + (parseFloat(conta.saldo_atual) || 0), 0);
-    const invTotal = db.investimentos.reduce((acc, inv) => acc + (parseFloat(inv.valor_atual) || 0), 0);
-    const cartoesTotal = db.cartoes.reduce((acc, cartao) => acc + (parseFloat(cartao.limite_utilizado) || 0), 0);
-    const patrimonioLiquido = saldoTotal + invTotal - cartoesTotal;
+    // 1. Cálculos base
+    const saldoTotal = db.contas.reduce((acc, c) => acc + (parseFloat(c.saldo_atual) || 0), 0);
+    const patrimonioLiquido = saldoTotal + db.investimentos.reduce((acc, i) => acc + (parseFloat(i.valor_atual) || 0), 0) - db.cartoes.reduce((acc, c) => acc + (parseFloat(c.limite_utilizado) || 0), 0);
 
-    document.getElementById('card-saldo').innerText = formatCurrency(saldoTotal);
-    document.getElementById('card-investimentos').innerText = formatCurrency(invTotal);
-    document.getElementById('card-cartoes').innerText = formatCurrency(cartoesTotal);
-    document.getElementById('card-patrimonio').innerText = formatCurrency(patrimonioLiquido);
-
-    const tabelaMov = document.getElementById('tabela-movimentacoes');
-    if(tabelaMov) {
-        tabelaMov.innerHTML = '';
-
-        const ultimasMovs = db.movimentacoes.slice(-5).reverse();
-        if (ultimasMovs.length === 0) {
-            tabelaMov.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma movimentação encontrada.</td></tr>';
-        } else {
-            ultimasMovs.forEach(mov => {
-                const isEntrada = mov.tipo === 'Entrada';
-                const corValor = isEntrada ? 'text-emerald-400' : 'text-red-400';
-                const sinal = isEntrada ? '+' : '-';
-
-                const row = `
-                    <tr class="hover:bg-slate-800/30 transition-colors">
-                        <td class="p-4 text-slate-300">${formatDate(mov.data)}</td>
-                        <td class="p-4 text-white font-medium">${mov.descricao}</td>
-                        <td class="p-4"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span></td>
-                        <td class="p-4 text-right font-bold ${corValor}">${sinal} ${formatCurrency(mov.valor)}</td>
-                    </tr>
-                `;
-                tabelaMov.insertAdjacentHTML('beforeend', row);
-            });
-        }
-    }
-
-    // === RENDERIZAÇÃO DA META PRINCIPAL ===
-    const configMeta = db.configuracoes.find(c => c.chave === 'meta_principal_valor');
-    const valorMetaPrincipal = configMeta ? parseFloat(configMeta.valor) : 600000;
+    // 2. Dashboard Geral (Cards)
+    const cardSaldo = document.getElementById('card-saldo');
+    if(cardSaldo) cardSaldo.innerText = formatCurrency(saldoTotal);
     
-    let percentualMeta = (patrimonioLiquido / valorMetaPrincipal) * 100;
-    if (percentualMeta > 100) percentualMeta = 100;
-    if (percentualMeta < 0) percentualMeta = 0;
-    
-    const valorFaltante = valorMetaPrincipal - patrimonioLiquido;
+    const cardPatrimonio = document.getElementById('card-patrimonio');
+    if(cardPatrimonio) cardPatrimonio.innerText = formatCurrency(patrimonioLiquido);
 
-    const metaValorAtualEl = document.getElementById('meta-valor-atual');
-    if(metaValorAtualEl) {
-        metaValorAtualEl.innerText = formatCurrency(patrimonioLiquido);
-        document.getElementById('meta-valor-total').innerText = `/ ${formatCurrency(valorMetaPrincipal)}`;
-        document.getElementById('meta-barra').style.width = `${percentualMeta}%`;
-        document.getElementById('meta-percentual').innerText = `${percentualMeta.toFixed(2)}% concluído`;
-        document.getElementById('meta-faltante').innerText = `Faltam ${formatCurrency(valorFaltante > 0 ? valorFaltante : 0)}`;
-    }
-
-    // === RENDERIZAÇÃO DOS COFRINHOS ===
-    const listaCofrinhos = document.getElementById('lista-cofrinhos');
-    if(listaCofrinhos) {
-        listaCofrinhos.innerHTML = '';
-
-        if (db.cofrinhos.length === 0) {
-            listaCofrinhos.innerHTML = '<p class="text-slate-500 text-center py-4">Nenhum cofrinho criado ainda.</p>';
-        } else {
-            db.cofrinhos.forEach(cof => {
-                const meta = parseFloat(cof.meta) || 0;
-                const atual = parseFloat(cof.valor_atual) || 0;
-                let percentual = meta > 0 ? (atual / meta) * 100 : 0;
-                if (percentual > 100) percentual = 100;
-
-                let corBarra = 'bg-blue-500';
-                if (percentual >= 100) corBarra = 'bg-emerald-500';
-                else if (percentual > 50) corBarra = 'bg-teal-400';
-
-                const itemHTML = `
-                    <div>
-                        <div class="flex justify-between items-end mb-1">
-                            <div>
-                                <p class="text-white font-medium">${cof.nome}</p>
-                                <p class="text-xs text-slate-400">${cof.descricao}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-bold text-white">${formatCurrency(atual)}</p>
-                                <p class="text-xs text-slate-500">de ${formatCurrency(meta)}</p>
-                            </div>
-                        </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2">
-                            <div class="${corBarra} h-2 rounded-full transition-all duration-1000" style="width: ${percentual}%"></div>
-                        </div>
-                    </div>
-                `;
-                listaCofrinhos.insertAdjacentHTML('beforeend', itemHTML);
-            });
-        }
-    }
-
-    // === RENDERIZAÇÃO DE CONTAS A PAGAR ===
-    const tabelaContas = document.getElementById('tabela-contas-pagar');
-    if(tabelaContas) {
-        tabelaContas.innerHTML = '';
-
-        const contasPendentes = db.contasPagar.filter(c => c.status === 'Pendente');
-        
-        if (contasPendentes.length === 0) {
-            tabelaContas.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma conta pendente.</td></tr>';
-        } else {
-            contasPendentes.forEach(conta => {
-                tabelaContas.innerHTML += `
-                    <tr class="hover:bg-slate-800/30 transition-colors">
-                        <td class="p-4 text-white font-medium">${conta.descricao}</td>
-                        <td class="p-4 text-slate-300">${formatDate(conta.data_vencimento)}</td>
-                        <td class="p-4 text-red-400 font-bold">${formatCurrency(conta.valor)}</td>
-                        <td class="p-4 text-right">
-                            <button onclick="pagarConta('${conta.id_conta_pagar}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs font-bold transition">
-                                Pagar
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-    }
-
-    // === MÓDULO CARTÕES ===
-    const listaCartoes = document.getElementById('lista-cartoes');
-    if (listaCartoes) {
-        listaCartoes.innerHTML = ''; 
-        db.cartoes.forEach(c => {
-            listaCartoes.innerHTML += `
-                <div class="flex justify-between border-b border-slate-700 pb-2">
-                    <span>${c.nome_cartao}</span>
-                    <span class="font-bold text-red-400">${formatCurrency(c.limite_utilizado)}</span>
+    // 3. Renderiza Contas a Pagar (Tela Pagamentos)
+    const containerPag = document.getElementById('tabela-contas-pagar');
+    if(containerPag) {
+        containerPag.innerHTML = db.contasPagar.map(c => `
+            <div class="flex justify-between items-center py-3 border-b border-slate-700">
+                <div><p class="text-white">${c.descricao}</p><p class="text-xs text-slate-400">${formatDate(c.data_vencimento)}</p></div>
+                <div class="flex items-center gap-4">
+                    <span class="text-red-400 font-bold">${formatCurrency(c.valor)}</span>
+                    <button onclick="pagarConta('${c.id_conta_pagar}')" class="bg-emerald-600 px-3 py-1 rounded text-xs font-bold text-white">Pagar</button>
                 </div>
-            `;
-        });
+            </div>
+        `).join('');
     }
 
-    // === MÓDULO CALENDÁRIO ===
-    const listaCal = document.getElementById('lista-calendario');
-    if (listaCal) {
-        listaCal.innerHTML = ''; 
-        const proxVencimentos = [...db.contasPagar].sort((a,b) => new Date(a.data_vencimento) - new Date(b.data_vencimento));
-        proxVencimentos.slice(0, 3).forEach(c => {
-            listaCal.innerHTML += `
-                <li class="flex justify-between bg-slate-800 p-3 rounded">
-                    <span>${c.descricao}</span>
-                    <span class="text-xs">${formatDate(c.data_vencimento)}</span>
-                </li>
-            `;
-        });
+    // 4. Renderiza Cartões (Tela Cartões)
+    const containerCartoes = document.getElementById('lista-cartoes-detalhada');
+    if(containerCartoes) {
+        containerCartoes.innerHTML = db.cartoes.map(c => `
+            <div class="bg-card p-6 rounded-xl border border-slate-700">
+                <h4 class="text-white font-bold">${c.nome_cartao}</h4>
+                <p class="text-sm text-slate-400">Limite: ${formatCurrency(c.limite)}</p>
+                <div class="mt-4 bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div class="bg-blue-500 h-2" style="width: ${(c.limite_utilizado / c.limite) * 100}%"></div>
+                </div>
+                <p class="text-right text-red-400 font-bold mt-2">${formatCurrency(c.limite_utilizado)}</p>
+            </div>
+        `).join('');
     }
 
-    // === MÓDULO RELATÓRIOS (CHART.JS) ===
+    // 5. Gráfico (Tela Relatórios)
     const canvasPatrimonio = document.getElementById('graficoPatrimonio');
-    if (canvasPatrimonio) {
+    if(canvasPatrimonio) {
         const ctx = canvasPatrimonio.getContext('2d');
-        
-        if (window.chartPatrimonio) {
-            window.chartPatrimonio.destroy();
-        }
-        
-        window.chartPatrimonio = new Chart(ctx, {
+        if (window.meuGrafico) window.meuGrafico.destroy();
+        window.meuGrafico = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                datasets: [{
-                    label: 'Patrimônio',
-                    data: [120000, 135000, 140000, 155000, 170000, patrimonioLiquido],
-                    borderColor: '#3b82f6',
-                    tension: 0.4
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
+                datasets: [{ label: 'Patrimônio', data: [120000, 135000, 140000, 155000, 160000, patrimonioLiquido], borderColor: '#3b82f6' }]
+            }
         });
     }
 }
@@ -344,8 +221,6 @@ async function salvarAporte(event) {
 
 // === LÓGICA DE BAIXA AUTOMÁTICA (CONTAS A PAGAR) ===
 async function pagarConta(idContaPagar) {
-    // Captura o evento global para garantir que o botão pode ser editado
-    // mesmo sem passar o (event) no onclick do HTML
     const evt = window.event;
     let btn = null;
     if (evt) {
@@ -368,7 +243,7 @@ async function pagarConta(idContaPagar) {
         const result = await response.json();
         
         if (result.status === 'success') {
-            await fetchAllData(); // Recarrega tudo do Sheets
+            await fetchAllData(); 
         } else {
             alert('Erro: ' + result.message);
             if (btn) {
