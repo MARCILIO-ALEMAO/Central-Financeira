@@ -77,7 +77,7 @@ async function fetchAllData() {
     }
 }
 
-// === RENDERIZAÇÃO ORIGINAL MANTIDA ===
+// === RENDERIZAÇÃO ===
 function renderDashboard() {
     // Se o backend mockar arrays vazios em caso de não existência:
     db.contas = db.contas || [];
@@ -86,7 +86,7 @@ function renderDashboard() {
     db.movimentacoes = db.movimentacoes || [];
     db.configuracoes = db.configuracoes || [];
     db.cofrinhos = db.cofrinhos || [];
-    db.contasPagar = db.contasPagar || []; // Garantindo que exista para a nova função
+    db.contasPagar = db.contasPagar || []; 
 
     const saldoTotal = db.contas.reduce((acc, conta) => acc + (parseFloat(conta.saldo_atual) || 0), 0);
     const invTotal = db.investimentos.reduce((acc, inv) => acc + (parseFloat(inv.valor_atual) || 0), 0);
@@ -99,27 +99,29 @@ function renderDashboard() {
     document.getElementById('card-patrimonio').innerText = formatCurrency(patrimonioLiquido);
 
     const tabelaMov = document.getElementById('tabela-movimentacoes');
-    tabelaMov.innerHTML = '';
+    if(tabelaMov) {
+        tabelaMov.innerHTML = '';
 
-    const ultimasMovs = db.movimentacoes.slice(-5).reverse();
-    if (ultimasMovs.length === 0) {
-        tabelaMov.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma movimentação encontrada.</td></tr>';
-    } else {
-        ultimasMovs.forEach(mov => {
-            const isEntrada = mov.tipo === 'Entrada';
-            const corValor = isEntrada ? 'text-emerald-400' : 'text-red-400';
-            const sinal = isEntrada ? '+' : '-';
+        const ultimasMovs = db.movimentacoes.slice(-5).reverse();
+        if (ultimasMovs.length === 0) {
+            tabelaMov.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma movimentação encontrada.</td></tr>';
+        } else {
+            ultimasMovs.forEach(mov => {
+                const isEntrada = mov.tipo === 'Entrada';
+                const corValor = isEntrada ? 'text-emerald-400' : 'text-red-400';
+                const sinal = isEntrada ? '+' : '-';
 
-            const row = `
-                <tr class="hover:bg-slate-800/30 transition-colors">
-                    <td class="p-4 text-slate-300">${formatDate(mov.data)}</td>
-                    <td class="p-4 text-white font-medium">${mov.descricao}</td>
-                    <td class="p-4"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span></td>
-                    <td class="p-4 text-right font-bold ${corValor}">${sinal} ${formatCurrency(mov.valor)}</td>
-                </tr>
-            `;
-            tabelaMov.insertAdjacentHTML('beforeend', row);
-        });
+                const row = `
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="p-4 text-slate-300">${formatDate(mov.data)}</td>
+                        <td class="p-4 text-white font-medium">${mov.descricao}</td>
+                        <td class="p-4"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span></td>
+                        <td class="p-4 text-right font-bold ${corValor}">${sinal} ${formatCurrency(mov.valor)}</td>
+                    </tr>
+                `;
+                tabelaMov.insertAdjacentHTML('beforeend', row);
+            });
+        }
     }
 
     // === RENDERIZAÇÃO DA META PRINCIPAL ===
@@ -132,48 +134,80 @@ function renderDashboard() {
     
     const valorFaltante = valorMetaPrincipal - patrimonioLiquido;
 
-    document.getElementById('meta-valor-atual').innerText = formatCurrency(patrimonioLiquido);
-    document.getElementById('meta-valor-total').innerText = `/ ${formatCurrency(valorMetaPrincipal)}`;
-    document.getElementById('meta-barra').style.width = `${percentualMeta}%`;
-    document.getElementById('meta-percentual').innerText = `${percentualMeta.toFixed(2)}% concluído`;
-    document.getElementById('meta-faltante').innerText = `Faltam ${formatCurrency(valorFaltante > 0 ? valorFaltante : 0)}`;
+    const metaValorAtualEl = document.getElementById('meta-valor-atual');
+    if(metaValorAtualEl) {
+        metaValorAtualEl.innerText = formatCurrency(patrimonioLiquido);
+        document.getElementById('meta-valor-total').innerText = `/ ${formatCurrency(valorMetaPrincipal)}`;
+        document.getElementById('meta-barra').style.width = `${percentualMeta}%`;
+        document.getElementById('meta-percentual').innerText = `${percentualMeta.toFixed(2)}% concluído`;
+        document.getElementById('meta-faltante').innerText = `Faltam ${formatCurrency(valorFaltante > 0 ? valorFaltante : 0)}`;
+    }
 
     // === RENDERIZAÇÃO DOS COFRINHOS ===
     const listaCofrinhos = document.getElementById('lista-cofrinhos');
-    listaCofrinhos.innerHTML = '';
+    if(listaCofrinhos) {
+        listaCofrinhos.innerHTML = '';
 
-    if (db.cofrinhos.length === 0) {
-        listaCofrinhos.innerHTML = '<p class="text-slate-500 text-center py-4">Nenhum cofrinho criado ainda.</p>';
-    } else {
-        db.cofrinhos.forEach(cof => {
-            const meta = parseFloat(cof.meta) || 0;
-            const atual = parseFloat(cof.valor_atual) || 0;
-            let percentual = meta > 0 ? (atual / meta) * 100 : 0;
-            if (percentual > 100) percentual = 100;
+        if (db.cofrinhos.length === 0) {
+            listaCofrinhos.innerHTML = '<p class="text-slate-500 text-center py-4">Nenhum cofrinho criado ainda.</p>';
+        } else {
+            db.cofrinhos.forEach(cof => {
+                const meta = parseFloat(cof.meta) || 0;
+                const atual = parseFloat(cof.valor_atual) || 0;
+                let percentual = meta > 0 ? (atual / meta) * 100 : 0;
+                if (percentual > 100) percentual = 100;
 
-            let corBarra = 'bg-blue-500';
-            if (percentual >= 100) corBarra = 'bg-emerald-500';
-            else if (percentual > 50) corBarra = 'bg-teal-400';
+                let corBarra = 'bg-blue-500';
+                if (percentual >= 100) corBarra = 'bg-emerald-500';
+                else if (percentual > 50) corBarra = 'bg-teal-400';
 
-            const itemHTML = `
-                <div>
-                    <div class="flex justify-between items-end mb-1">
-                        <div>
-                            <p class="text-white font-medium">${cof.nome}</p>
-                            <p class="text-xs text-slate-400">${cof.descricao}</p>
+                const itemHTML = `
+                    <div>
+                        <div class="flex justify-between items-end mb-1">
+                            <div>
+                                <p class="text-white font-medium">${cof.nome}</p>
+                                <p class="text-xs text-slate-400">${cof.descricao}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold text-white">${formatCurrency(atual)}</p>
+                                <p class="text-xs text-slate-500">de ${formatCurrency(meta)}</p>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm font-bold text-white">${formatCurrency(atual)}</p>
-                            <p class="text-xs text-slate-500">de ${formatCurrency(meta)}</p>
+                        <div class="w-full bg-slate-800 rounded-full h-2">
+                            <div class="${corBarra} h-2 rounded-full transition-all duration-1000" style="width: ${percentual}%"></div>
                         </div>
                     </div>
-                    <div class="w-full bg-slate-800 rounded-full h-2">
-                        <div class="${corBarra} h-2 rounded-full transition-all duration-1000" style="width: ${percentual}%"></div>
-                    </div>
-                </div>
-            `;
-            listaCofrinhos.insertAdjacentHTML('beforeend', itemHTML);
-        });
+                `;
+                listaCofrinhos.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+    }
+
+    // === RENDERIZAÇÃO DE CONTAS A PAGAR ===
+    const tabelaContas = document.getElementById('tabela-contas-pagar');
+    if(tabelaContas) {
+        tabelaContas.innerHTML = '';
+
+        const contasPendentes = db.contasPagar.filter(c => c.status === 'Pendente');
+        
+        if (contasPendentes.length === 0) {
+            tabelaContas.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma conta pendente.</td></tr>';
+        } else {
+            contasPendentes.forEach(conta => {
+                tabelaContas.innerHTML += `
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="p-4 text-white font-medium">${conta.descricao}</td>
+                        <td class="p-4 text-slate-300">${formatDate(conta.data_vencimento)}</td>
+                        <td class="p-4 text-red-400 font-bold">${formatCurrency(conta.valor)}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="pagarConta('${conta.id_conta_pagar}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs font-bold transition">
+                                Pagar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
     }
 }
 
