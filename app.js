@@ -10,11 +10,9 @@ window.onload = function () {
         </button>
     `;
 
-    // Seta a data de hoje como padrão no modal
     document.getElementById('mov-data').valueAsDate = new Date();
-    
-    // Intercepta o envio do formulário
     document.getElementById('form-movimentacao').addEventListener('submit', salvarMovimentacao);
+    document.getElementById('form-aporte').addEventListener('submit', salvarAporte);
 };
 
 async function handleCredentialResponse() {
@@ -31,10 +29,8 @@ function logout() {
 
 const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 
-// Formatador de Data à prova de fuso horário
 const formatDate = (dateString) => {
     if (!dateString) return '-';
-    // Pega apenas a parte YYYY-MM-DD, ignorando o restante da string
     const shortDate = String(dateString).substring(0, 10);
     const date = new Date(shortDate + 'T12:00:00');
     return new Intl.DateTimeFormat('pt-BR').format(date);
@@ -77,27 +73,80 @@ function renderDashboard() {
     const ultimasMovs = db.movimentacoes.slice(-5).reverse();
     if (ultimasMovs.length === 0) {
         tabelaMov.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma movimentação encontrada.</td></tr>';
-        return;
+    } else {
+        ultimasMovs.forEach(mov => {
+            const isEntrada = mov.tipo === 'Entrada';
+            const corValor = isEntrada ? 'text-emerald-400' : 'text-red-400';
+            const sinal = isEntrada ? '+' : '-';
+
+            const row = `
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                    <td class="p-4 text-slate-300">${formatDate(mov.data)}</td>
+                    <td class="p-4 text-white font-medium">${mov.descricao}</td>
+                    <td class="p-4"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span></td>
+                    <td class="p-4 text-right font-bold ${corValor}">${sinal} ${formatCurrency(mov.valor)}</td>
+                </tr>
+            `;
+            tabelaMov.insertAdjacentHTML('beforeend', row);
+        });
     }
 
-    ultimasMovs.forEach(mov => {
-        const isEntrada = mov.tipo === 'Entrada';
-        const corValor = isEntrada ? 'text-emerald-400' : 'text-red-400';
-        const sinal = isEntrada ? '+' : '-';
+    // === RENDERIZAÇÃO DA META PRINCIPAL ===
+    const configMeta = db.configuracoes.find(c => c.chave === 'meta_principal_valor');
+    const valorMetaPrincipal = configMeta ? parseFloat(configMeta.valor) : 600000;
+    
+    let percentualMeta = (patrimonioLiquido / valorMetaPrincipal) * 100;
+    if (percentualMeta > 100) percentualMeta = 100;
+    if (percentualMeta < 0) percentualMeta = 0;
+    
+    const valorFaltante = valorMetaPrincipal - patrimonioLiquido;
 
-        const row = `
-            <tr class="hover:bg-slate-800/30 transition-colors">
-                <td class="p-4 text-slate-300">${formatDate(mov.data)}</td>
-                <td class="p-4 text-white font-medium">${mov.descricao}</td>
-                <td class="p-4"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span></td>
-                <td class="p-4 text-right font-bold ${corValor}">${sinal} ${formatCurrency(mov.valor)}</td>
-            </tr>
-        `;
-        tabelaMov.insertAdjacentHTML('beforeend', row);
-    });
+    document.getElementById('meta-valor-atual').innerText = formatCurrency(patrimonioLiquido);
+    document.getElementById('meta-valor-total').innerText = `/ ${formatCurrency(valorMetaPrincipal)}`;
+    document.getElementById('meta-barra').style.width = `${percentualMeta}%`;
+    document.getElementById('meta-percentual').innerText = `${percentualMeta.toFixed(2)}% concluído`;
+    document.getElementById('meta-faltante').innerText = `Faltam ${formatCurrency(valorFaltante > 0 ? valorFaltante : 0)}`;
+
+    // === RENDERIZAÇÃO DOS COFRINHOS ===
+    const listaCofrinhos = document.getElementById('lista-cofrinhos');
+    listaCofrinhos.innerHTML = '';
+
+    if (db.cofrinhos.length === 0) {
+        listaCofrinhos.innerHTML = '<p class="text-slate-500 text-center py-4">Nenhum cofrinho criado ainda.</p>';
+    } else {
+        db.cofrinhos.forEach(cof => {
+            const meta = parseFloat(cof.meta) || 0;
+            const atual = parseFloat(cof.valor_atual) || 0;
+            let percentual = meta > 0 ? (atual / meta) * 100 : 0;
+            if (percentual > 100) percentual = 100;
+
+            let corBarra = 'bg-blue-500';
+            if (percentual >= 100) corBarra = 'bg-emerald-500';
+            else if (percentual > 50) corBarra = 'bg-teal-400';
+
+            const itemHTML = `
+                <div>
+                    <div class="flex justify-between items-end mb-1">
+                        <div>
+                            <p class="text-white font-medium">${cof.nome}</p>
+                            <p class="text-xs text-slate-400">${cof.descricao}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold text-white">${formatCurrency(atual)}</p>
+                            <p class="text-xs text-slate-500">de ${formatCurrency(meta)}</p>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2">
+                        <div class="${corBarra} h-2 rounded-full transition-all duration-1000" style="width: ${percentual}%"></div>
+                    </div>
+                </div>
+            `;
+            listaCofrinhos.insertAdjacentHTML('beforeend', itemHTML);
+        });
+    }
 }
 
-// === CONTROLE DO MODAL ===
+// === CONTROLE DO MODAL MOVIMENTAÇÃO ===
 function abrirModalMovimentacao() {
     document.getElementById('modal-movimentacao').classList.remove('hidden');
 }
@@ -108,19 +157,16 @@ function fecharModalMovimentacao() {
     document.getElementById('mov-data').valueAsDate = new Date();
 }
 
-// === SALVAR NO BANCO DE DADOS ===
 async function salvarMovimentacao(event) {
-    event.preventDefault(); // Evita recarregar a página
-    
+    event.preventDefault();
     const btnSalvar = document.getElementById('btn-salvar');
     btnSalvar.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-xl"></i> Salvando...';
     btnSalvar.disabled = true;
 
-    // Coleta os dados do formulário
     const novaMovimentacao = {
-        id_movimentacao: 'MOV' + Date.now(), // Gera um ID único simples
+        id_movimentacao: 'MOV' + Date.now(),
         id_usuario: 'USR001',
-        id_conta: 'CTA001', // Por enquanto fixo na conta 1
+        id_conta: 'CTA001',
         id_cartao: '',
         tipo: document.getElementById('mov-tipo').value,
         categoria: document.getElementById('mov-categoria').value,
@@ -130,41 +176,48 @@ async function salvarMovimentacao(event) {
         id_documento: ''
     };
 
+    const payload = { action: 'insertRow', sheet: 'Movimentacoes', email: 'marcilio@example.com', data: novaMovimentacao };
+
+    try {
+        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (result.status === 'success') {
+            db.movimentacoes.push(novaMovimentacao);
+            renderDashboard();
+            fecharModalMovimentacao();
+        } else { alert('Erro: ' + result.message); }
+    } catch (error) { alert('Falha ao enviar.'); }
+    finally { btnSalvar.innerHTML = 'Salvar Registro'; btnSalvar.disabled = false; }
+}
+
+// === CONTROLE DO MODAL APORTES ===
+function abrirModalAporte() {
+    const select = document.getElementById('aporte-cofrinho');
+    select.innerHTML = '<option value="" disabled selected>Selecione...</option>';
+    db.cofrinhos.forEach(cof => { select.innerHTML += `<option value="${cof.id_cofrinho}">${cof.nome}</option>`; });
+    document.getElementById('modal-aporte').classList.remove('hidden');
+}
+function fecharModalAporte() { document.getElementById('modal-aporte').classList.add('hidden'); }
+
+async function salvarAporte(event) {
+    event.preventDefault();
+    const idCofrinho = document.getElementById('aporte-cofrinho').value;
+    const valorAporte = parseFloat(document.getElementById('aporte-valor').value);
+    const cofrinho = db.cofrinhos.find(c => c.id_cofrinho === idCofrinho);
+    
     const payload = {
-        action: 'insertRow',
-        sheet: 'Movimentacoes',
-        email: 'marcilio@example.com',
-        data: novaMovimentacao
+        action: 'updateRow', sheet: 'Cofrinhos', email: 'marcilio@example.com',
+        idKey: 'id_cofrinho', idValue: idCofrinho,
+        data: { valor_atual: parseFloat(cofrinho.valor_atual) + valorAporte }
     };
 
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
+        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.json();
-
         if (result.status === 'success') {
-            // Atualiza o banco de dados local para exibir a mudança imediatamente
-            db.movimentacoes.push(novaMovimentacao);
-            
-            // Simula impacto no saldo da conta 1
-            const conta = db.contas.find(c => c.id_conta === 'CTA001');
-            if (conta) {
-                if (novaMovimentacao.tipo === 'Entrada') conta.saldo_atual = parseFloat(conta.saldo_atual) + novaMovimentacao.valor;
-                else conta.saldo_atual = parseFloat(conta.saldo_atual) - novaMovimentacao.valor;
-            }
-
+            cofrinho.valor_atual = parseFloat(cofrinho.valor_atual) + valorAporte;
             renderDashboard();
-            fecharModalMovimentacao();
-        } else {
-            alert('Erro ao salvar: ' + result.message);
+            fecharModalAporte();
         }
-    } catch (error) {
-        console.error(error);
-        alert('Falha ao enviar dados para a nuvem.');
-    } finally {
-        btnSalvar.innerHTML = 'Salvar Registro';
-        btnSalvar.disabled = false;
-    }
+    } catch (error) { alert('Erro ao atualizar.'); }
 }
