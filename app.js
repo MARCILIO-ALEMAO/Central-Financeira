@@ -92,6 +92,7 @@ function renderDashboard() {
     db.investimentos = db.investimentos || [];
     db.cartoes = db.cartoes || [];
     db.contasPagar = db.contasPagar || []; 
+    db.movimentacoes = db.movimentacoes || []; // Adicionado para manter a consistência de segurança
 
     // 1. Cálculos base
     const saldoTotal = db.contas.reduce((acc, c) => acc + (parseFloat(c.saldo_atual) || 0), 0);
@@ -103,6 +104,32 @@ function renderDashboard() {
     
     const cardPatrimonio = document.getElementById('card-patrimonio');
     if(cardPatrimonio) cardPatrimonio.innerText = formatCurrency(patrimonioLiquido);
+
+    // === RENDERIZAÇÃO DA TABELA DE MOVIMENTAÇÕES ===
+    const tabelaMov = document.getElementById('tabela-movimentacoes');
+    if (tabelaMov) {
+        tabelaMov.innerHTML = '';
+        const ultimasMovs = (db.movimentacoes || []).slice(-5).reverse();
+        
+        if (ultimasMovs.length === 0) {
+            tabelaMov.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma movimentação encontrada.</td></tr>';
+        } else {
+            ultimasMovs.forEach(mov => {
+                const isEntrada = mov.tipo === 'Entrada';
+                const corValor = isEntrada ? 'text-emerald-400' : 'text-red-400';
+                const sinal = isEntrada ? '+' : '-';
+
+                tabelaMov.innerHTML += `
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="p-4 text-slate-300">${formatDate(mov.data)}</td>
+                        <td class="p-4 text-white font-medium">${mov.descricao}</td>
+                        <td class="p-4"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span></td>
+                        <td class="p-4 text-right font-bold ${corValor}">${sinal} ${formatCurrency(mov.valor)}</td>
+                    </tr>
+                `;
+            });
+        }
+    }
 
     // 3. Renderiza Contas a Pagar (Tela Pagamentos)
     const containerPag = document.getElementById('tabela-contas-pagar');
