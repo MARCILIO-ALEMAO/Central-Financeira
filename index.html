@@ -22,6 +22,11 @@
     </script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Classe para gerenciar a visibilidade das telas */
+        .screen-content { display: none; }
+        .screen-content.active { display: block; }
+    </style>
 </head>
 <body class="bg-darker text-slate-300 font-sans h-screen flex overflow-hidden antialiased">
 
@@ -40,16 +45,49 @@
     </div>
 
     <div id="app-screen" class="flex w-full h-full hidden">
+        
         <aside class="w-64 bg-card border-r border-slate-800 flex flex-col hidden md:flex">
             <div class="p-6 border-b border-slate-800 flex items-center gap-3">
                 <i class="ph ph-wallet text-3xl text-primary"></i>
                 <span class="text-xl font-bold text-white">Financeiro</span>
             </div>
-            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg">
-                    <i class="ph ph-squares-four text-xl"></i><span class="font-medium">Dashboard</span>
-                </a>
+            
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="main-nav">
+                <button onclick="changeScreen('dashboard')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg transition" data-target="dashboard">
+                    <i class="ph ph-squares-four text-xl"></i><span class="font-medium text-sm">Dashboard</span>
+                </button>
+                <button onclick="changeScreen('movimentacoes')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="movimentacoes">
+                    <i class="ph ph-arrows-left-right text-xl"></i><span class="font-medium text-sm">Movimentações</span>
+                </button>
+                <button onclick="changeScreen('cartoes')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="cartoes">
+                    <i class="ph ph-credit-card text-xl"></i><span class="font-medium text-sm">Cartões de Crédito</span>
+                </button>
+                <button onclick="changeScreen('contas')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="contas">
+                    <i class="ph ph-bank text-xl"></i><span class="font-medium text-sm">Contas Bancárias</span>
+                </button>
+                <button onclick="changeScreen('pagamentos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="pagamentos">
+                    <i class="ph ph-calendar-check text-xl"></i><span class="font-medium text-sm">A Pagar / Receber</span>
+                </button>
+                <button onclick="changeScreen('investimentos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="investimentos">
+                    <i class="ph ph-trend-up text-xl"></i><span class="font-medium text-sm">Investimentos</span>
+                </button>
+                <button onclick="changeScreen('cofrinhos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="cofrinhos">
+                    <i class="ph ph-piggy-bank text-xl"></i><span class="font-medium text-sm">Cofrinhos</span>
+                </button>
+                <button onclick="changeScreen('calendario')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="calendario">
+                    <i class="ph ph-calendar text-xl"></i><span class="font-medium text-sm">Calendário</span>
+                </button>
+                <button onclick="changeScreen('documentos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="documentos">
+                    <i class="ph ph-file-text text-xl"></i><span class="font-medium text-sm">Documentos</span>
+                </button>
+                <button onclick="changeScreen('relatorios')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="relatorios">
+                    <i class="ph ph-chart-pie-slice text-xl"></i><span class="font-medium text-sm">Relatórios</span>
+                </button>
+                <button onclick="changeScreen('configuracoes')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="configuracoes">
+                    <i class="ph ph-gear text-xl"></i><span class="font-medium text-sm">Configurações</span>
+                </button>
             </nav>
+
             <div class="p-4 border-t border-slate-800 flex items-center gap-3 px-4 py-2">
                 <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">M</div>
                 <div class="flex-1 overflow-hidden">
@@ -59,9 +97,9 @@
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-            <div class="flex-1 p-6 overflow-y-auto">
-                
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative p-6 overflow-y-auto">
+            
+            <div id="screen-dashboard" class="screen-content active">
                 <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-white">Dashboard Geral</h2>
@@ -125,7 +163,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-                    
                     <div class="bg-card p-6 rounded-xl border border-slate-700 lg:col-span-1 bg-gradient-to-br from-slate-800 to-slate-900">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-bold text-white flex items-center gap-2">
@@ -156,12 +193,112 @@
                                 <i class="ph ph-plus"></i> Novo Aporte
                             </button>
                         </div>
-                        
                         <div id="lista-cofrinhos" class="space-y-6 overflow-y-auto max-h-64 pr-2">
                             </div>
                     </div>
                 </div>
+            </div>
+
+            <div id="screen-movimentacoes" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Movimentações</h2>
+                    <p class="text-slate-400">Lançamento de Entradas/Saídas, Categorização e Filtros.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
                 </div>
+            </div>
+
+            <div id="screen-cartoes" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Cartões de Crédito</h2>
+                    <p class="text-slate-400">Gestão de faturas, limites e vencimentos.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-contas" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Contas Bancárias</h2>
+                    <p class="text-slate-400">Gestão de saldo, liquidez e transferências.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-pagamentos" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Contas a Pagar / Receber</h2>
+                    <p class="text-slate-400">Gestão de fluxo futuro e recorrências.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-investimentos" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Investimentos</h2>
+                    <p class="text-slate-400">Acompanhamento de ativos (CDB, Ações, Cripto) e rentabilidade.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-cofrinhos" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Gestão de Cofrinhos</h2>
+                    <p class="text-slate-400">Criação de metas independentes e histórico de atingimento.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-calendario" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Calendário Financeiro</h2>
+                    <p class="text-slate-400">Visão cronológica e sincronização via Google Calendar.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-documentos" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Documentos</h2>
+                    <p class="text-slate-400">Arquivo digital e upload de comprovantes (PDF/IMG).</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-relatorios" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Relatórios</h2>
+                    <p class="text-slate-400">Inteligência de dados, gráficos por categoria e evolução patrimonial.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
+            <div id="screen-configuracoes" class="screen-content">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Configurações</h2>
+                    <p class="text-slate-400">Ajuste da Meta Principal, categorias e permissões de usuários.</p>
+                </header>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 flex items-center justify-center h-64">
+                    <p class="text-slate-500">Módulo em desenvolvimento...</p>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -191,7 +328,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Descrição</label>
-                    <input type="text" id="mov-descricao" required placeholder="Ex: Cachê MPCAST, Peças Trailer ACM..." class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                    <input type="text" id="mov-descricao" required placeholder="Ex: Cachê, Peças..." class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -231,7 +368,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Selecione o Cofrinho</label>
                     <select id="aporte-cofrinho" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
-                        </select>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Valor do Aporte (R$)</label>
