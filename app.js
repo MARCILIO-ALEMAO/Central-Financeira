@@ -15,6 +15,27 @@ window.onload = function () {
     document.getElementById('form-aporte').addEventListener('submit', salvarAporte);
 };
 
+// === SISTEMA DE NAVEGAÇÃO SPA ===
+function changeScreen(screenId) {
+    // 1. Esconde todas as telas
+    const screens = document.querySelectorAll('.screen-content');
+    screens.forEach(screen => screen.classList.remove('active'));
+
+    // 2. Mostra a tela alvo
+    document.getElementById(`screen-${screenId}`).classList.add('active');
+
+    // 3. Atualiza os estilos dos botões no menu
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        if (btn.dataset.target === screenId) {
+            btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg transition";
+        } else {
+            btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition";
+        }
+    });
+}
+
+// === AUTENTICAÇÃO E DADOS ===
 async function handleCredentialResponse() {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('loading-screen').classList.remove('hidden');
@@ -56,7 +77,16 @@ async function fetchAllData() {
     }
 }
 
+// === RENDERIZAÇÃO ORIGINAL MANTIDA ===
 function renderDashboard() {
+    // Se o backend mockar arrays vazios em caso de não existência:
+    db.contas = db.contas || [];
+    db.investimentos = db.investimentos || [];
+    db.cartoes = db.cartoes || [];
+    db.movimentacoes = db.movimentacoes || [];
+    db.configuracoes = db.configuracoes || [];
+    db.cofrinhos = db.cofrinhos || [];
+
     const saldoTotal = db.contas.reduce((acc, conta) => acc + (parseFloat(conta.saldo_atual) || 0), 0);
     const invTotal = db.investimentos.reduce((acc, inv) => acc + (parseFloat(inv.valor_atual) || 0), 0);
     const cartoesTotal = db.cartoes.reduce((acc, cartao) => acc + (parseFloat(cartao.limite_utilizado) || 0), 0);
@@ -197,7 +227,10 @@ function abrirModalAporte() {
     db.cofrinhos.forEach(cof => { select.innerHTML += `<option value="${cof.id_cofrinho}">${cof.nome}</option>`; });
     document.getElementById('modal-aporte').classList.remove('hidden');
 }
-function fecharModalAporte() { document.getElementById('modal-aporte').classList.add('hidden'); }
+
+function fecharModalAporte() { 
+    document.getElementById('modal-aporte').classList.add('hidden'); 
+}
 
 async function salvarAporte(event) {
     event.preventDefault();
