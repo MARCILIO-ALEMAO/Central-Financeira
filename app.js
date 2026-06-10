@@ -1,7 +1,4 @@
-// URL da sua API no Google Apps Script
 const API_URL = 'https://script.google.com/macros/s/AKfycbxn-dylgW67tQWbSL2MhkoaERR3EMBIA-tOVXwTLwrP0Y0PK02jG6KK8n9VryIZf-3jdQ/exec';
-
-// Variável global para armazenar o banco de dados temporariamente no navegador
 let db = {};
 
 window.onload = function () {
@@ -12,36 +9,34 @@ window.onload = function () {
             Entrar com Google
         </button>
     `;
+
+    // Seta a data de hoje como padrão no modal
+    document.getElementById('mov-data').valueAsDate = new Date();
+    
+    // Intercepta o envio do formulário
+    document.getElementById('form-movimentacao').addEventListener('submit', salvarMovimentacao);
 };
 
 async function handleCredentialResponse() {
-    // Esconde tela de login e mostra a tela de carregamento
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('loading-screen').classList.remove('hidden');
-    
-    // Inicia o download de todos os dados do painel
     await fetchAllData();
 }
 
 function logout() {
     document.getElementById('app-screen').classList.add('hidden');
     document.getElementById('login-screen').classList.remove('hidden');
-    db = {}; // Limpa os dados em memória
+    db = {};
 }
 
-// Formatador de Moeda (BRL)
-const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
-};
-
-// Formatador de Data
+const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 const formatDate = (dateString) => {
     if (!dateString) return '-';
-    const date = new Date(dateString);
+    // Corrige problema de fuso horário ao exibir data
+    const date = new Date(dateString + 'T12:00:00');
     return new Intl.DateTimeFormat('pt-BR').format(date);
 };
 
-// Busca todos os dados em uma única requisição
 async function fetchAllData() {
     try {
         const response = await fetch(`${API_URL}?action=getAllData&email=marcilio@example.com`);
@@ -49,51 +44,38 @@ async function fetchAllData() {
         
         if (result.status === 'success') {
             db = result.data;
-            console.log("Banco de dados sincronizado:", db);
-            
-            // Oculta loading e exibe a aplicação principal
             document.getElementById('loading-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
-            
-            // Renderiza os componentes da tela
             renderDashboard();
         } else {
-            alert('Erro ao carregar dados: ' + result.message);
+            alert('Erro: ' + result.message);
             logout();
         }
     } catch (error) {
-        console.error("Erro de conexão:", error);
-        alert('Falha na conexão com o servidor.');
+        alert('Falha na conexão.');
         logout();
     }
 }
 
-// Calcula os totais e preenche o HTML
 function renderDashboard() {
-    // 1. Calcula Saldo das Contas Bancárias
     const saldoTotal = db.contas.reduce((acc, conta) => acc + (parseFloat(conta.saldo_atual) || 0), 0);
-    
-    // 2. Calcula Total em Investimentos
     const invTotal = db.investimentos.reduce((acc, inv) => acc + (parseFloat(inv.valor_atual) || 0), 0);
-    
-    // 3. Calcula Faturas de Cartão (Limite Utilizado)
     const cartoesTotal = db.cartoes.reduce((acc, cartao) => acc + (parseFloat(cartao.limite_utilizado) || 0), 0);
-    
-    // 4. Patrimônio Líquido (Saldo + Investimentos - Faturas)
     const patrimonioLiquido = saldoTotal + invTotal - cartoesTotal;
 
-    // Atualiza os cards no HTML
     document.getElementById('card-saldo').innerText = formatCurrency(saldoTotal);
     document.getElementById('card-investimentos').innerText = formatCurrency(invTotal);
     document.getElementById('card-cartoes').innerText = formatCurrency(cartoesTotal);
     document.getElementById('card-patrimonio').innerText = formatCurrency(patrimonioLiquido);
 
-    // 5. Preenche a tabela de Últimas Movimentações
     const tabelaMov = document.getElementById('tabela-movimentacoes');
     tabelaMov.innerHTML = '';
 
-    // Pega as últimas 5 movimentações e inverte a ordem (mais recentes primeiro)
     const ultimasMovs = db.movimentacoes.slice(-5).reverse();
+    if (ultimasMovs.length === 0) {
+        tabelaMov.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhuma movimentação encontrada.</td></tr>';
+        return;
+    }
 
     ultimasMovs.forEach(mov => {
         const isEntrada = mov.tipo === 'Entrada';
@@ -104,14 +86,82 @@ function renderDashboard() {
             <tr class="hover:bg-slate-800/30 transition-colors">
                 <td class="p-4 text-slate-300">${formatDate(mov.data)}</td>
                 <td class="p-4 text-white font-medium">${mov.descricao}</td>
-                <td class="p-4">
-                    <span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span>
-                </td>
-                <td class="p-4 text-right font-bold ${corValor}">
-                    ${sinal} ${formatCurrency(mov.valor)}
-                </td>
+                <td class="p-4"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${mov.categoria}</span></td>
+                <td class="p-4 text-right font-bold ${corValor}">${sinal} ${formatCurrency(mov.valor)}</td>
             </tr>
         `;
         tabelaMov.insertAdjacentHTML('beforeend', row);
     });
+}
+
+// === CONTROLE DO MODAL ===
+function abrirModalMovimentacao() {
+    document.getElementById('modal-movimentacao').classList.remove('hidden');
+}
+
+function fecharModalMovimentacao() {
+    document.getElementById('modal-movimentacao').classList.add('hidden');
+    document.getElementById('form-movimentacao').reset();
+    document.getElementById('mov-data').valueAsDate = new Date();
+}
+
+// === SALVAR NO BANCO DE DADOS ===
+async function salvarMovimentacao(event) {
+    event.preventDefault(); // Evita recarregar a página
+    
+    const btnSalvar = document.getElementById('btn-salvar');
+    btnSalvar.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-xl"></i> Salvando...';
+    btnSalvar.disabled = true;
+
+    // Coleta os dados do formulário
+    const novaMovimentacao = {
+        id_movimentacao: 'MOV' + Date.now(), // Gera um ID único simples
+        id_usuario: 'USR001',
+        id_conta: 'CTA001', // Por enquanto fixo na conta 1
+        id_cartao: '',
+        tipo: document.getElementById('mov-tipo').value,
+        categoria: document.getElementById('mov-categoria').value,
+        valor: parseFloat(document.getElementById('mov-valor').value),
+        data: document.getElementById('mov-data').value,
+        descricao: document.getElementById('mov-descricao').value,
+        id_documento: ''
+    };
+
+    const payload = {
+        action: 'insertRow',
+        sheet: 'Movimentacoes',
+        email: 'marcilio@example.com',
+        data: novaMovimentacao
+    };
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            // Atualiza o banco de dados local para exibir a mudança imediatamente
+            db.movimentacoes.push(novaMovimentacao);
+            
+            // Simula impacto no saldo da conta 1
+            const conta = db.contas.find(c => c.id_conta === 'CTA001');
+            if (conta) {
+                if (novaMovimentacao.tipo === 'Entrada') conta.saldo_atual = parseFloat(conta.saldo_atual) + novaMovimentacao.valor;
+                else conta.saldo_atual = parseFloat(conta.saldo_atual) - novaMovimentacao.valor;
+            }
+
+            renderDashboard();
+            fecharModalMovimentacao();
+        } else {
+            alert('Erro ao salvar: ' + result.message);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Falha ao enviar dados para a nuvem.');
+    } finally {
+        btnSalvar.innerHTML = 'Salvar Registro';
+        btnSalvar.disabled = false;
+    }
 }
