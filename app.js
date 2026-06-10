@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxn-dylgW67tQWbSL2MhkoaERR3EMBIA-tOVXwTLwrP0Y0PK02jG6KK8n9VryIZf-3jdQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw-5gmkzFvxVU6VipzYaCpuhBSCSGKmg3JB2Djmf7T4PGpnI0Sac4V_9AMYceHEuwzrFg/exec';
 let db = {};
 
 window.onload = function () {
