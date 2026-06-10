@@ -30,10 +30,13 @@ function logout() {
 }
 
 const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+
+// Formatador de Data à prova de fuso horário
 const formatDate = (dateString) => {
     if (!dateString) return '-';
-    // Corrige problema de fuso horário ao exibir data
-    const date = new Date(dateString + 'T12:00:00');
+    // Pega apenas a parte YYYY-MM-DD, ignorando o restante da string
+    const shortDate = String(dateString).substring(0, 10);
+    const date = new Date(shortDate + 'T12:00:00');
     return new Intl.DateTimeFormat('pt-BR').format(date);
 };
 
