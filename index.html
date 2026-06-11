@@ -214,7 +214,12 @@
             </div>
 
             <div id="screen-pagamentos" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Contas a Pagar e Receber</h2>
+                <header class="mb-6 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-white">Contas a Pagar / Receber</h2>
+                    <button onclick="abrirModalContaPagar()" class="bg-primary hover:bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center gap-2">
+                        <i class="ph ph-plus-circle text-xl"></i> Nova Conta
+                    </button>
+                </header>
                 <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
@@ -341,6 +346,9 @@
                     </div>
                 </div>
                 <button type="submit" id="btn-salvar-cof" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 transition">Salvar Cofrinho</button>
+                <button type="button" id="btn-deletar-cof" onclick="deletarCofrinho()" class="hidden w-full bg-red-900/50 hover:bg-red-900 text-red-200 font-bold py-3 rounded-lg mt-2 transition">
+                    Excluir Cofrinho
+                </button>
             </form>
         </div>
     </div>
@@ -360,6 +368,18 @@
                     <input type="number" id="trans-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 text-center text-xl font-bold">
                 </div>
                 <button type="submit" id="btn-salvar-trans" class="w-full text-white font-bold py-3 rounded-lg mt-2 transition">Confirmar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-conta-pagar" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
+        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-6">Nova Conta</h3>
+            <form id="form-conta-pagar" class="space-y-4">
+                <input type="text" id="cp-desc" placeholder="Descrição" required class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white">
+                <input type="number" id="cp-valor" placeholder="Valor" step="0.01" required class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white">
+                <input type="date" id="cp-data" required class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white [color-scheme:dark]">
+                <button type="submit" class="w-full bg-primary py-3 rounded text-white font-bold">Salvar Conta</button>
             </form>
         </div>
     </div>
