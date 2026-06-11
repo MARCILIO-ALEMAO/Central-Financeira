@@ -20,6 +20,7 @@ window.onload = function () {
     document.getElementById('form-movimentacao')?.addEventListener('submit', salvarMovimentacao);
     document.getElementById('form-cofrinho')?.addEventListener('submit', salvarCofrinho);
     document.getElementById('form-transacao-cofre')?.addEventListener('submit', processarTransacaoCofre);
+    document.getElementById('form-conta-pagar')?.addEventListener('submit', salvarContaPagar);
 };
 
 // === NAVEGAÇÃO SPA ===
@@ -324,6 +325,7 @@ function abrirModalCofrinho(id = null) {
     if (!modal || !form) return;
 
     form.reset();
+    const btnDeletar = document.getElementById('btn-deletar-cof');
     
     if (id) {
         const cof = db.cofrinhos.find(c => c.id_cofrinho === id);
@@ -335,9 +337,11 @@ function abrirModalCofrinho(id = null) {
             document.getElementById('cof-meta').value = cof.meta;
             document.getElementById('cof-atual').value = cof.valor_atual;
         }
+        if (btnDeletar) btnDeletar.classList.remove('hidden');
     } else {
         document.getElementById('titulo-modal-cofrinho').innerText = 'Novo Cofrinho';
         document.getElementById('cof-id').value = '';
+        if (btnDeletar) btnDeletar.classList.add('hidden');
     }
     
     modal.classList.remove('hidden');
@@ -447,4 +451,45 @@ async function processarTransacaoCofre(e) {
         } else { alert('Erro ao processar transação.'); }
     } catch(err) { alert('Falha de conexão.'); }
     finally { if(btn) { btn.innerText = 'Confirmar'; btn.disabled = false; } }
+}
+
+// === MÓDULO: DELETAR COFRINHO ===
+async function deletarCofrinho() {
+    const idCof = document.getElementById('cof-id').value;
+    if (!confirm('Tem certeza que deseja excluir este cofrinho? Esta ação não pode ser desfeita.')) return;
+
+    try {
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'deleteRow', sheet: 'Cofrinhos', email: 'marcilio@example.com', idKey: 'id_cofrinho', idValue: idCof }) 
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+            await fetchAllData();
+            fecharModalCofrinho();
+        }
+    } catch(e) { alert('Erro ao excluir.'); }
+}
+
+// === MÓDULO: NOVA CONTA A PAGAR ===
+function abrirModalContaPagar() { 
+    document.getElementById('modal-conta-pagar').classList.remove('hidden'); 
+}
+
+async function salvarContaPagar(e) {
+    e.preventDefault();
+    const novaConta = {
+        id_conta_pagar: 'CP' + Date.now(),
+        descricao: document.getElementById('cp-desc').value,
+        valor: parseFloat(document.getElementById('cp-valor').value),
+        data_vencimento: document.getElementById('cp-data').value,
+        status: 'Pendente'
+    };
+    
+    try {
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'insertRow', sheet: 'ContasPagar', email: 'marcilio@example.com', data: novaConta }) });
+        await fetchAllData();
+        document.getElementById('modal-conta-pagar').classList.add('hidden');
+        document.getElementById('form-conta-pagar').reset();
+    } catch(e) { alert('Erro ao salvar conta.'); }
 }
