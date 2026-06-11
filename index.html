@@ -24,7 +24,6 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Classe para gerenciar a visibilidade das telas */
         .screen-content { display: none; }
         .screen-content.active { display: block; }
     </style>
@@ -157,8 +156,7 @@
                                     <th class="p-4 font-medium text-right">Valor</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabela-movimentacoes" class="text-sm divide-y divide-slate-700/50">
-                            </tbody>
+                            <tbody id="tabela-movimentacoes" class="text-sm divide-y divide-slate-700/50"></tbody>
                         </table>
                     </div>
                 </div>
@@ -184,8 +182,7 @@
                 <header class="mb-6 flex justify-between items-center">
                     <h2 class="text-2xl font-bold text-white">Histórico de Movimentações</h2>
                     <button onclick="abrirModalMovimentacao()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
-                        <i class="ph ph-plus-circle text-xl"></i>
-                        Nova
+                        <i class="ph ph-plus-circle text-xl"></i> Nova
                     </button>
                 </header>
                 <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
@@ -200,8 +197,7 @@
                                     <th class="p-4 font-medium text-right">Valor</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabela-movimentacoes-completa" class="text-sm divide-y divide-slate-700/50">
-                                </tbody>
+                            <tbody id="tabela-movimentacoes-completa" class="text-sm divide-y divide-slate-700/50"></tbody>
                         </table>
                     </div>
                 </div>
@@ -209,14 +205,12 @@
 
             <div id="screen-cartoes" class="screen-content">
                 <h2 class="text-2xl font-bold text-white mb-6">Cartões de Crédito</h2>
-                <div id="lista-cartoes-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
+                <div id="lista-cartoes-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
 
             <div id="screen-contas" class="screen-content">
                 <h2 class="text-2xl font-bold text-white mb-6">Contas Bancárias</h2>
-                <div id="lista-contas-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
+                <div id="lista-contas-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
 
             <div id="screen-pagamentos" class="screen-content">
@@ -224,8 +218,7 @@
                 <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
-                            <tbody id="tabela-contas-pagar" class="text-sm divide-y divide-slate-700">
-                                </tbody>
+                            <tbody id="tabela-contas-pagar" class="text-sm divide-y divide-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -233,16 +226,14 @@
 
             <div id="screen-investimentos" class="screen-content">
                 <h2 class="text-2xl font-bold text-white mb-6">Meus Investimentos</h2>
-                <div id="lista-investimentos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
+                <div id="lista-investimentos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
 
             <div id="screen-cofrinhos" class="screen-content">
                 <header class="mb-6 flex justify-between items-center">
                     <h2 class="text-2xl font-bold text-white">Meus Cofrinhos</h2>
-                    <button onclick="abrirModalAporte()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
-                        <i class="ph ph-piggy-bank text-xl"></i>
-                        Novo Aporte
+                    <button onclick="abrirModalCofrinho()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
+                        <i class="ph ph-plus-circle text-xl"></i> Novo Cofrinho
                     </button>
                 </header>
                 <div id="lista-cofrinhos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -271,14 +262,12 @@
                     <canvas id="graficoPatrimonio" class="w-full h-80"></canvas>
                 </div>
             </div>
-
             <div id="screen-configuracoes" class="screen-content">
                 <h2 class="text-2xl font-bold text-white mb-6">Configurações do Sistema</h2>
                 <div class="bg-card p-6 rounded-xl border border-slate-700">
                     <p class="text-slate-400">Preferências e configurações em desenvolvimento.</p>
                 </div>
             </div>
-
         </main>
     </div>
 
@@ -316,6 +305,7 @@
                         <select id="mov-categoria" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
                             <option value="Serviços">Serviços</option>
                             <option value="Equipamentos">Equipamentos</option>
+                            <option value="Alimentação">Alimentação</option>
                         </select>
                     </div>
                 </div>
@@ -324,16 +314,56 @@
         </div>
     </div>
 
-    <div id="modal-aporte" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-sm shadow-2xl">
-            <h3 class="text-xl font-bold text-white mb-6">Novo Aporte</h3>
-            <form id="form-aporte" class="space-y-4">
-                <select id="aporte-cofrinho" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5"></select>
-                <input type="number" id="aporte-valor" step="0.01" required placeholder="Valor" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg">Guardar Dinheiro</button>
+    <div id="modal-cofrinho" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
+        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="titulo-modal-cofrinho" class="text-xl font-bold text-white">Novo Cofrinho</h3>
+                <button onclick="fecharModalCofrinho()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
+            </div>
+            <form id="form-cofrinho" class="space-y-4">
+                <input type="hidden" id="cof-id">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Nome da Meta</label>
+                    <input type="text" id="cof-nome" required placeholder="Ex: Viagem final de ano" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Descrição</label>
+                    <input type="text" id="cof-desc" placeholder="Detalhes (Opcional)" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Valor da Meta (R$)</label>
+                        <input type="number" id="cof-meta" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Saldo Atual (R$)</label>
+                        <input type="number" id="cof-atual" step="0.01" value="0" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
+                    </div>
+                </div>
+                <button type="submit" id="btn-salvar-cof" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 transition">Salvar Cofrinho</button>
             </form>
         </div>
     </div>
+
+    <div id="modal-transacao-cofre" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
+        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="titulo-transacao-cofre" class="text-xl font-bold text-white">Movimentar</h3>
+                <button onclick="fecharModalTransacaoCofre()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
+            </div>
+            <form id="form-transacao-cofre" class="space-y-4">
+                <input type="hidden" id="trans-cof-id">
+                <input type="hidden" id="trans-tipo">
+                <p id="trans-cof-nome" class="text-slate-400 text-sm mb-4 text-center"></p>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Valor (R$)</label>
+                    <input type="number" id="trans-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 text-center text-xl font-bold">
+                </div>
+                <button type="submit" id="btn-salvar-trans" class="w-full text-white font-bold py-3 rounded-lg mt-2 transition">Confirmar</button>
+            </form>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
