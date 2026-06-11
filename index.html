@@ -268,10 +268,31 @@
                     <canvas id="graficoPatrimonio" class="w-full h-80"></canvas>
                 </div>
             </div>
+            
             <div id="screen-configuracoes" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Configurações do Sistema</h2>
-                <div class="bg-card p-6 rounded-xl border border-slate-700">
-                    <p class="text-slate-400">Preferências e configurações em desenvolvimento.</p>
+                <h2 class="text-2xl font-bold text-white mb-6">Configurações</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-card p-6 rounded-xl border border-slate-700">
+                        <h3 class="text-lg font-bold text-white mb-4">Meta de Patrimônio</h3>
+                        <form id="form-config-meta" class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-slate-400 mb-1">Objetivo de Valor (R$)</label>
+                                <input type="number" id="config-meta-valor" step="1000" class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white">
+                            </div>
+                            <button type="submit" class="bg-primary w-full py-2 rounded text-white font-bold">Salvar Meta</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-card p-6 rounded-xl border border-slate-700">
+                        <h3 class="text-lg font-bold text-white mb-4">Gerenciar Categorias</h3>
+                        <p class="text-sm text-slate-400 mb-4">As categorias aparecem nos lançamentos.</p>
+                        <div id="lista-categorias" class="flex flex-wrap gap-2">
+                            <span class="bg-slate-700 px-3 py-1 rounded text-sm text-white">Serviços</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded text-sm text-white">Equipamentos</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded text-sm text-white">Alimentação</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
