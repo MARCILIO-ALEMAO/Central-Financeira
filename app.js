@@ -100,12 +100,22 @@ function renderDashboard() {
 
     // Contas a Pagar
     const tabPag = document.getElementById('tabela-contas-pagar');
-    if(tabPag) tabPag.innerHTML = db.contasPagar.filter(c => c.status === 'Pendente').map(c => `
-        <tr class="border-b border-slate-700">
-            <td class="p-4">${c.descricao}<br><span class="text-xs text-slate-500">${formatDate(c.data_vencimento)}</span></td>
-            <td class="p-4 text-right font-bold text-red-400">${formatCurrency(c.valor)}</td>
-            <td class="p-4 text-right"><button onclick="pagarConta('${c.id_conta_pagar}')" class="bg-emerald-600 px-3 py-1 rounded text-xs font-bold text-white">Pagar</button></td>
-        </tr>`).join('');
+    if(tabPag) {
+        tabPag.innerHTML = db.contasPagar.filter(c => c.status === 'Pendente').map(c => `
+        <tr class="hover:bg-slate-800/30 border-b border-slate-700 cursor-pointer" onclick="abrirModalContaPagar('${c.id_conta_pagar}')">
+            <td class="p-4">
+                <p class="text-white font-medium">${c.descricao} <span class="text-[10px] uppercase bg-slate-700 px-1 rounded">${c.tipo || 'Pagar'}</span></p>
+                <p class="text-xs text-slate-400">${formatDate(c.data_vencimento)}</p>
+            </td>
+            <td class="p-4 ${c.tipo === 'Receber' ? 'text-emerald-400' : 'text-red-400'} font-bold text-right">
+                ${c.tipo === 'Receber' ? '+' : '-'} ${formatCurrency(c.valor)}
+            </td>
+            <td class="p-4 text-right">
+                <button onclick="event.stopPropagation(); pagarConta('${c.id_conta_pagar}')" class="bg-emerald-600 px-3 py-1 rounded text-xs font-bold text-white">Pagar</button>
+            </td>
+        </tr>
+        `).join('');
+    }
 
     // Cofrinhos
     const listaCof = document.getElementById('lista-cofrinhos-detalhada');
@@ -162,26 +172,69 @@ async function salvarMovimentacao(e) {
     finally { if (btn) { btn.innerHTML = 'Salvar Registro'; btn.disabled = false; } }
 }
 
-// === CONTAS A PAGAR ===
-function abrirModalContaPagar() { document.getElementById('modal-conta-pagar').classList.remove('hidden'); }
-function fecharModalContaPagar() { document.getElementById('modal-conta-pagar').classList.add('hidden'); }
+// === FUNÇÕES DE CONTA A PAGAR / RECEBER ===
+function abrirModalContaPagar(id = null) {
+    const modal = document.getElementById('modal-conta-pagar');
+    const form = document.getElementById('form-conta-pagar');
+    const btnDeletar = document.getElementById('btn-deletar-conta');
+    form.reset();
+    
+    if (id) {
+        const c = db.contasPagar.find(x => x.id_conta_pagar === id);
+        document.getElementById('cp-id').value = c.id_conta_pagar;
+        document.getElementById('cp-desc').value = c.descricao;
+        document.getElementById('cp-valor').value = c.valor;
+        document.getElementById('cp-data').value = c.data_vencimento.substring(0, 10);
+        document.getElementById('cp-tipo').value = c.tipo || 'Pagar';
+        document.getElementById('titulo-modal-conta').innerText = 'Editar Conta';
+        btnDeletar.classList.remove('hidden');
+    } else {
+        document.getElementById('cp-id').value = '';
+        document.getElementById('titulo-modal-conta').innerText = 'Nova Conta';
+        btnDeletar.classList.add('hidden');
+    }
+    modal.classList.remove('hidden');
+}
+
+function fecharModalContaPagar() { 
+    document.getElementById('modal-conta-pagar').classList.add('hidden'); 
+}
 
 async function salvarContaPagar(e) {
     e.preventDefault();
-    const nova = { 
-        id_conta_pagar: 'CP' + Date.now(), 
-        descricao: document.getElementById('cp-desc').value, 
-        valor: parseFloat(document.getElementById('cp-valor').value), 
-        data_vencimento: document.getElementById('cp-data').value, 
-        status: 'Pendente' 
+    const id = document.getElementById('cp-id').value;
+    const isEdit = id !== '';
+    const dados = {
+        descricao: document.getElementById('cp-desc').value,
+        valor: parseFloat(document.getElementById('cp-valor').value),
+        tipo: document.getElementById('cp-tipo').value,
+        data_vencimento: document.getElementById('cp-data').value,
+        status: 'Pendente'
     };
+
+    const payload = {
+        action: isEdit ? 'updateRow' : 'insertRow',
+        sheet: 'ContasPagar',
+        email: 'marcilio@example.com',
+        data: isEdit ? dados : { id_conta_pagar: 'CP' + Date.now(), ...dados },
+        ...(isEdit && { idKey: 'id_conta_pagar', idValue: id })
+    };
+
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+    await fetchAllData();
+    fecharModalContaPagar();
+}
+
+async function deletarContaPagar() {
+    const id = document.getElementById('cp-id').value;
+    if (!confirm('Deseja excluir esta conta?')) return;
     
-    try {
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'insertRow', sheet: 'ContasPagar', email: 'marcilio@example.com', data: nova }) });
-        await fetchAllData();
-        fecharModalContaPagar();
-        document.getElementById('form-conta-pagar').reset();
-    } catch(e) { alert('Erro ao salvar conta.'); }
+    await fetch(API_URL, { 
+        method: 'POST', 
+        body: JSON.stringify({ action: 'deleteRow', sheet: 'ContasPagar', email: 'marcilio@example.com', idKey: 'id_conta_pagar', idValue: id }) 
+    });
+    await fetchAllData();
+    fecharModalContaPagar();
 }
 
 async function pagarConta(idContaPagar) {
