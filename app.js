@@ -15,6 +15,9 @@ window.onload = function () {
     document.getElementById('form-cofrinho')?.addEventListener('submit', salvarCofrinho);
     document.getElementById('form-transacao-cofre')?.addEventListener('submit', processarTransacaoCofre);
     document.getElementById('form-conta-pagar')?.addEventListener('submit', salvarContaPagar);
+    
+    // Configurações Listener adicionado aqui para seguir o padrão de inicialização
+    document.getElementById('form-config-meta')?.addEventListener('submit', salvarMetaPatrimonio);
 };
 
 // === NAVEGAÇÃO SPA ===
@@ -65,6 +68,7 @@ function renderDashboard() {
     db.contasPagar = db.contasPagar || []; 
     db.movimentacoes = db.movimentacoes || [];
     db.cofrinhos = db.cofrinhos || [];
+    db.configuracoes = db.configuracoes || []; // Garantindo inicialização
 
     const saldoTotal = db.contas.reduce((acc, c) => acc + (parseFloat(c.saldo_atual) || 0), 0);
     const invTotal = db.investimentos.reduce((acc, i) => acc + (parseFloat(i.valor_atual) || 0), 0);
@@ -137,6 +141,9 @@ function renderDashboard() {
                 </div>
             </div>`;
     }).join('');
+
+    // Chama o carregamento dos inputs de configurações assim que os dados renderizarem
+    carregarConfiguracoes();
 }
 
 // === MOVIMENTAÇÕES ===
@@ -203,7 +210,6 @@ function fecharModalContaPagar() {
 async function salvarContaPagar(e) {
     e.preventDefault();
     
-    // 1. Feedback visual imediato
     const btn = document.getElementById('btn-salvar-conta');
     const originalText = btn.innerText;
     btn.innerHTML = '<i class="ph ph-spinner-gap animate-spin"></i> Salvando...';
@@ -228,7 +234,6 @@ async function salvarContaPagar(e) {
     };
 
     try {
-        // 2. Chamada à API
         const response = await fetch(API_URL, { 
             method: 'POST', 
             body: JSON.stringify(payload) 
@@ -244,7 +249,6 @@ async function salvarContaPagar(e) {
     } catch(e) { 
         alert('Erro ao salvar conta. Verifique sua conexão.'); 
     } finally {
-        // 3. Reset do botão
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
@@ -375,4 +379,35 @@ async function processarTransacaoCofre(e) {
         fecharModalTransacaoCofre();
     } catch(err) { alert('Falha ao processar transação.'); }
     finally { if(btn) { btn.innerText = 'Confirmar'; btn.disabled = false; } }
+}
+
+// === MÓDULO: CONFIGURAÇÕES ===
+
+async function salvarMetaPatrimonio(e) {
+    e.preventDefault();
+    const metaValor = document.getElementById('config-meta-valor').value;
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'updateRow',
+                sheet: 'Configuracoes',
+                email: 'marcilio@example.com',
+                idKey: 'chave',
+                idValue: 'meta_patrimonio',
+                data: { valor: metaValor }
+            })
+        });
+        alert('Meta atualizada com sucesso!');
+        await fetchAllData(); // Atualiza o DB local para refletir a nova meta se necessário
+    } catch(e) { alert('Erro ao salvar meta.'); }
+}
+
+function carregarConfiguracoes() {
+    if (db.configuracoes) {
+        const meta = db.configuracoes.find(c => c.chave === 'meta_patrimonio');
+        const inputMeta = document.getElementById('config-meta-valor');
+        if(meta && inputMeta) inputMeta.value = meta.valor;
+    }
 }
