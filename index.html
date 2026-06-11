@@ -3,419 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central Financeira</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: '#0f172a',
-                        darker: '#020617',
-                        card: '#1e293b',
-                        primary: '#3b82f6'
-                    }
-                }
-            }
-        }
-    </script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <title>Finanças Pessoais</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Estilos para o SPA funcionar corretamente */
         .screen-content { display: none; }
         .screen-content.active { display: block; }
+        /* Definição da cor bg-card usada no seu projeto */
+        .bg-card { background-color: #1e293b; }
     </style>
 </head>
-<body class="bg-darker text-slate-300 font-sans h-screen flex overflow-hidden antialiased">
+<body class="bg-slate-900 text-slate-100 font-sans antialiased">
 
-    <div id="login-screen" class="fixed inset-0 z-50 bg-darker flex flex-col items-center justify-center">
-        <div class="bg-card p-8 rounded-xl shadow-2xl border border-slate-700 w-96 text-center">
-            <i class="ph ph-wallet text-6xl text-primary mb-4"></i>
-            <h1 class="text-2xl font-bold text-white mb-2">Central Financeira</h1>
-            <p class="text-xs text-primary font-mono mb-4">v.1.0.6</p>
-            <p class="text-sm text-slate-400 mb-8">Acesse seu painel de controle</p>
-            <div id="buttonDiv" class="flex justify-center"></div>
+    <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-4">
+        <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 w-full max-w-md text-center shadow-xl">
+            <i class="ph ph-wallet text-5xl text-emerald-400 mb-4"></i>
+            <h1 class="text-2xl font-bold text-white mb-2">Finanças Pro</h1>
+            <p class="text-slate-400 text-sm mb-6">Gerencie seu patrimônio de forma inteligente</p>
+            <div id="buttonDiv"></div>
         </div>
     </div>
 
-    <div id="loading-screen" class="fixed inset-0 z-40 bg-darker/90 flex flex-col items-center justify-center hidden">
-        <i class="ph ph-spinner-gap text-4xl text-primary animate-spin mb-4"></i>
-        <p class="text-white font-medium">Sincronizando banco de dados...</p>
+    <div id="loading-screen" class="hidden min-h-screen flex flex-col items-center justify-center bg-slate-950">
+        <i class="ph ph-spinner-gap text-4xl text-emerald-400 animate-spin mb-4"></i>
+        <p class="text-slate-400 font-medium">Sincronizando com o Google Sheets...</p>
     </div>
 
-    <div id="app-screen" class="flex w-full h-full hidden">
+    <div id="app-screen" class="hidden min-h-screen flex flex-col md:flex-row">
         
-        <aside class="w-64 bg-card border-r border-slate-800 flex flex-col hidden md:flex">
-            <div class="p-6 border-b border-slate-800 flex items-center gap-3">
-                <i class="ph ph-wallet text-3xl text-primary"></i>
-                <span class="text-xl font-bold text-white">Financeiro</span>
+        <aside class="w-full md:w-64 bg-slate-950 p-4 border-r border-slate-800 flex flex-col gap-6">
+            <div class="flex items-center gap-3 px-2">
+                <i class="ph ph-currency-circle-dollar text-3xl text-emerald-400"></i>
+                <span class="font-bold text-lg text-white tracking-wide">Meu Painel</span>
             </div>
             
-            <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="main-nav">
-                <button onclick="changeScreen('dashboard')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg transition" data-target="dashboard">
-                    <i class="ph ph-squares-four text-xl"></i><span class="font-medium text-sm">Dashboard</span>
+            <nav class="flex flex-col gap-1 flex-1">
+                <button onclick="changeScreen('dashboard')" data-target="dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary/10 text-emerald-400 rounded-lg transition">
+                    <i class="ph ph-chart-pie text-xl"></i> Dashboard
                 </button>
-                <button onclick="changeScreen('movimentacoes')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="movimentacoes">
-                    <i class="ph ph-arrows-left-right text-xl"></i><span class="font-medium text-sm">Movimentações</span>
+                <button onclick="changeScreen('movimentacoes')" data-target="movimentacoes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition">
+                    <i class="ph ph-arrows-left-right text-xl"></i> Movimentações
                 </button>
-                <button onclick="changeScreen('cartoes')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="cartoes">
-                    <i class="ph ph-credit-card text-xl"></i><span class="font-medium text-sm">Cartões de Crédito</span>
+                <button onclick="changeScreen('cofrinhos')" data-target="cofrinhos" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition">
+                    <i class="ph ph-piggy-bank text-xl"></i> Cofrinhos
                 </button>
-                <button onclick="changeScreen('contas')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="contas">
-                    <i class="ph ph-bank text-xl"></i><span class="font-medium text-sm">Contas Bancárias</span>
+                <button onclick="changeScreen('contas')" data-target="contas" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition">
+                    <i class="ph ph-receipt text-xl"></i> Contas a Pagar
                 </button>
-                <button onclick="changeScreen('pagamentos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="pagamentos">
-                    <i class="ph ph-calendar-check text-xl"></i><span class="font-medium text-sm">A Pagar / Receber</span>
-                </button>
-                <button onclick="changeScreen('investimentos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="investimentos">
-                    <i class="ph ph-trend-up text-xl"></i><span class="font-medium text-sm">Investimentos</span>
-                </button>
-                <button onclick="changeScreen('cofrinhos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="cofrinhos">
-                    <i class="ph ph-piggy-bank text-xl"></i><span class="font-medium text-sm">Cofrinhos</span>
-                </button>
-                <button onclick="changeScreen('calendario')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="calendario">
-                    <i class="ph ph-calendar text-xl"></i><span class="font-medium text-sm">Calendário</span>
-                </button>
-                <button onclick="changeScreen('documentos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="documentos">
-                    <i class="ph ph-file-text text-xl"></i><span class="font-medium text-sm">Documentos</span>
-                </button>
-                <button onclick="changeScreen('relatorios')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="relatorios">
-                    <i class="ph ph-chart-pie-slice text-xl"></i><span class="font-medium text-sm">Relatórios</span>
-                </button>
-                <button onclick="changeScreen('configuracoes')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition" data-target="configuracoes">
-                    <i class="ph ph-gear text-xl"></i><span class="font-medium text-sm">Configurações</span>
+                <button onclick="changeScreen('configuracoes')" data-target="configuracoes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition">
+                    <i class="ph ph-gear text-xl"></i> Configurações
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-slate-800 flex items-center gap-3 px-4 py-2">
-                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">M</div>
-                <div class="flex-1 overflow-hidden">
-                    <p class="text-sm font-medium text-white truncate">Marcílio Silva</p>
-                    <a href="#" onclick="logout()" class="text-xs text-slate-500 hover:text-red-400">Sair</a>
-                </div>
-            </div>
+            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-950/30 rounded-lg transition mt-auto border border-dashed border-red-900/50">
+                <i class="ph ph-sign-out text-xl"></i> Sair do App
+            </button>
         </aside>
 
-        <main class="flex-1 flex flex-col h-full overflow-hidden relative p-6 overflow-y-auto">
+        <main class="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
             
-            <div id="screen-dashboard" class="screen-content active">
-                <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white">Dashboard Geral</h2>
-                        <p class="text-slate-400">Resumo consolidado do seu patrimônio.</p>
-                    </div>
-                    <button onclick="abrirModalMovimentacao()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
-                        <i class="ph ph-plus-circle text-xl"></i>
-                        Nova Movimentação
+            <div id="screen-dashboard" class="screen-content active space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-white">Resumo Geral</h2>
+                    <button onclick="abrirModalMovimentacao()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 text-sm transition">
+                        <i class="ph ph-plus-bold"></i> Nova Movimentação
                     </button>
-                </header>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-card p-6 rounded-xl border border-slate-700">
-                        <div class="flex justify-between items-start mb-4">
-                            <p class="text-slate-400 font-medium">Saldo Disponível</p>
-                            <i class="ph ph-wallet text-xl text-blue-400"></i>
-                        </div>
+                        <p class="text-sm text-slate-400 mb-1">Disponível em Contas</p>
                         <h3 id="card-saldo" class="text-2xl font-bold text-white">R$ 0,00</h3>
                     </div>
                     <div class="bg-card p-6 rounded-xl border border-slate-700">
-                        <div class="flex justify-between items-start mb-4">
-                            <p class="text-slate-400 font-medium">Investimentos</p>
-                            <i class="ph ph-trend-up text-xl text-emerald-400"></i>
-                        </div>
-                        <h3 id="card-investimentos" class="text-2xl font-bold text-white">R$ 0,00</h3>
+                        <p class="text-sm text-slate-400 mb-1">Investimentos</p>
+                        <h3 id="card-investimentos" class="text-2xl font-bold text-sky-400">R$ 0,00</h3>
                     </div>
                     <div class="bg-card p-6 rounded-xl border border-slate-700">
-                        <div class="flex justify-between items-start mb-4">
-                            <p class="text-slate-400 font-medium">Faturas em Aberto</p>
-                            <i class="ph ph-credit-card text-xl text-red-400"></i>
-                        </div>
-                        <h3 id="card-cartoes" class="text-2xl font-bold text-white">R$ 0,00</h3>
+                        <p class="text-sm text-slate-400 mb-1">Faturas / Cartões</p>
+                        <h3 id="card-cartoes" class="text-2xl font-bold text-orange-400">R$ 0,00</h3>
                     </div>
-                    <div class="bg-card p-6 rounded-xl border border-slate-700 bg-gradient-to-br from-card to-slate-800">
-                        <div class="flex justify-between items-start mb-4">
-                            <p class="text-slate-400 font-medium">Patrimônio Líquido</p>
-                            <i class="ph ph-bank text-xl text-purple-400"></i>
-                        </div>
-                        <h3 id="card-patrimonio" class="text-2xl font-bold text-white">R$ 0,00</h3>
+                    <div class="bg-card p-6 rounded-xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900">
+                        <p class="text-sm text-emerald-400 font-medium mb-1">Patrimônio Líquido</p>
+                        <h3 id="card-patrimonio" class="text-2xl font-bold text-emerald-400">R$ 0,00</h3>
                     </div>
                 </div>
 
-                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
-                    <div class="p-6 border-b border-slate-700">
-                        <h3 class="text-lg font-bold text-white">Últimas Movimentações</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-800/50 text-slate-400 text-sm border-b border-slate-700">
-                                    <th class="p-4 font-medium">Data</th>
-                                    <th class="p-4 font-medium">Descrição</th>
-                                    <th class="p-4 font-medium">Categoria</th>
-                                    <th class="p-4 font-medium text-right">Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabela-movimentacoes" class="text-sm divide-y divide-slate-700/50"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-                    <div class="bg-card p-6 rounded-xl border border-slate-700">
-                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <i class="ph ph-credit-card text-blue-400"></i> Faturas Cartão
-                        </h3>
-                        <div id="lista-cartoes" class="space-y-4 text-sm text-slate-300"></div>
-                    </div>
-
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-card p-6 rounded-xl border border-slate-700">
                         <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
                             <i class="ph ph-calendar text-yellow-400"></i> Próximos Vencimentos
                         </h3>
-                        <ul id="lista-calendario" class="space-y-3"></ul>
-                    </div>
-                </div>
-            </div>
-
-            <div id="screen-movimentacoes" class="screen-content">
-                <header class="mb-6 flex justify-between items-center">
-                    <h2 class="text-2xl font-bold text-white">Histórico de Movimentações</h2>
-                    <button onclick="abrirModalMovimentacao()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
-                        <i class="ph ph-plus-circle text-xl"></i> Nova
-                    </button>
-                </header>
-                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-800/50 text-slate-400 text-sm border-b border-slate-700">
-                                    <th class="p-4 font-medium">Data</th>
-                                    <th class="p-4 font-medium">Descrição</th>
-                                    <th class="p-4 font-medium">Categoria</th>
-                                    <th class="p-4 font-medium">Conta/Cartão</th>
-                                    <th class="p-4 font-medium text-right">Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabela-movimentacoes-completa" class="text-sm divide-y divide-slate-700/50"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="screen-cartoes" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Cartões de Crédito</h2>
-                <div id="lista-cartoes-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
-
-            <div id="screen-contas" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Contas Bancárias</h2>
-                <div id="lista-contas-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
-
-            <div id="screen-pagamentos" class="screen-content">
-                <header class="mb-6 flex justify-between items-center">
-                    <h2 class="text-2xl font-bold text-white">Contas a Pagar / Receber</h2>
-                    <button onclick="abrirModalContaPagar()" class="bg-primary hover:bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center gap-2">
-                        <i class="ph ph-plus-circle text-xl"></i> Nova Conta
-                    </button>
-                </header>
-                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <tbody id="tabela-contas-pagar" class="text-sm divide-y divide-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="screen-investimentos" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Meus Investimentos</h2>
-                <div id="lista-investimentos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
-
-            <div id="screen-cofrinhos" class="screen-content">
-                <header class="mb-6 flex justify-between items-center">
-                    <h2 class="text-2xl font-bold text-white">Meus Cofrinhos</h2>
-                    <button onclick="abrirModalCofrinho()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition">
-                        <i class="ph ph-plus-circle text-xl"></i> Novo Cofrinho
-                    </button>
-                </header>
-                <div id="lista-cofrinhos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
-            </div>
-
-            <div id="screen-calendario" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Calendário Financeiro</h2>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 text-center py-12">
-                    <i class="ph ph-calendar-blank text-6xl text-slate-500 mb-4"></i>
-                    <p class="text-slate-400">Visualização de calendário em desenvolvimento.</p>
-                </div>
-            </div>
-
-            <div id="screen-documentos" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Documentos e Comprovantes</h2>
-                <div class="bg-card p-6 rounded-xl border border-slate-700 text-center py-12">
-                    <i class="ph ph-files text-6xl text-slate-500 mb-4"></i>
-                    <p class="text-slate-400">Repositório de documentos em desenvolvimento.</p>
-                </div>
-            </div>
-
-            <div id="screen-relatorios" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Relatórios de Evolução</h2>
-                <div class="bg-card p-6 rounded-xl border border-slate-700">
-                    <canvas id="graficoPatrimonio" class="w-full h-80"></canvas>
-                </div>
-            </div>
-            
-            <div id="screen-configuracoes" class="screen-content">
-                <h2 class="text-2xl font-bold text-white mb-6">Configurações</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-card p-6 rounded-xl border border-slate-700">
-                        <h3 class="text-lg font-bold text-white mb-4">Meta de Patrimônio</h3>
-                        <form id="form-config-meta" class="space-y-4">
-                            <div>
-                                <label class="block text-sm text-slate-400 mb-1">Objetivo de Valor (R$)</label>
-                                <input type="number" id="config-meta-valor" step="1000" class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white">
+                        <div id="lista-calendario" class="space-y-3">
                             </div>
-                            <button type="submit" class="bg-primary w-full py-2 rounded text-white font-bold">Salvar Meta</button>
-                        </form>
                     </div>
 
-                    <div class="bg-card p-6 rounded-xl border border-slate-700">
-                        <h3 class="text-lg font-bold text-white mb-4">Gerenciar Categorias</h3>
-                        <p class="text-sm text-slate-400 mb-4">As categorias aparecem nos lançamentos.</p>
-                        <div id="lista-categorias" class="flex flex-wrap gap-2">
-                            <span class="bg-slate-700 px-3 py-1 rounded text-sm text-white">Serviços</span>
-                            <span class="bg-slate-700 px-3 py-1 rounded text-sm text-white">Equipamentos</span>
-                            <span class="bg-slate-700 px-3 py-1 rounded text-sm text-white">Alimentação</span>
+                    <div class="bg-card p-6 rounded-xl border border-slate-700 lg:col-span-2">
+                        <h3 class="text-lg font-bold text-white mb-4">Últimos Lançamentos</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-slate-300">
+                                <thead>
+                                    <tr class="border-b border-slate-700 text-slate-400">
+                                        <th class="pb-3 font-medium">Data</th>
+                                        <th class="pb-3 font-medium">Descrição</th>
+                                        <th class="pb-3 font-medium">Categoria</th>
+                                        <th class="pb-3 font-medium text-right">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-movimentacoes" class="divide-y divide-slate-800/50">
+                                    </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div id="screen-movimentacoes" class="screen-content hidden space-y-6">
+                <h2 class="text-2xl font-bold text-white">Extrato Completo</h2>
+                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-950 text-slate-400 uppercase text-xs tracking-wider">
+                                <tr>
+                                    <th class="p-4">Data</th>
+                                    <th class="p-4">Descrição</th>
+                                    <th class="p-4">Categoria</th>
+                                    <th class="p-4">Conta</th>
+                                    <th class="p-4 text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-movimentacoes-completa" class="divide-y divide-slate-800">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-cofrinhos" class="screen-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-white">Metas & Cofrinhos</h2>
+                    <button onclick="abrirModalCofrinho()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 text-sm transition">
+                        <i class="ph ph-plus-bold"></i> Criar Cofrinho
+                    </button>
+                </div>
+                <div id="lista-cofrinhos-detalhada" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+
+            <div id="screen-contas" class="screen-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-white">Contas a Pagar & Receber</h2>
+                    <button onclick="abrirModalContaPagar()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 text-sm transition">
+                        <i class="ph ph-plus-bold"></i> Nova Conta
+                    </button>
+                </div>
+                <div class="bg-card rounded-xl border border-slate-700 overflow-hidden">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400">
+                            <tr>
+                                <th class="p-4">Detalhes da Obrigação</th>
+                                <th class="p-4 text-right">Valor esperado</th>
+                                <th class="p-4 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-contas-pagar" class="divide-y divide-slate-800">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="screen-configuracoes" class="screen-content hidden space-y-6">
+                <h2 class="text-2xl font-bold text-white">Ajustes & Configurações</h2>
+                <div class="bg-card p-6 rounded-xl border border-slate-700 max-w-xl">
+                    <form id="form-config-meta" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">Meta Global de Patrimônio</label>
+                            <input type="number" id="config-meta-valor" step="0.01" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500" required>
+                        </div>
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg transition w-full text-sm">
+                            Salvar Configurações
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <div id="modal-movimentacao" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-white">Nova Movimentação</h3>
-                <button onclick="fecharModalMovimentacao()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
+    <div id="modal-movimentacao" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Nova Movimentação</h3>
+                <button onclick="fecharModalMovimentacao()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-xl"></i></button>
             </div>
             <form id="form-movimentacao" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Tipo</label>
-                        <select id="mov-tipo" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
-                            <option value="Entrada">Entrada (Receita)</option>
-                            <option value="Saída">Saída (Despesa)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Valor (R$)</label>
-                        <input type="number" id="mov-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
-                    </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Tipo</label>
+                    <select id="mov-tipo" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"><option>Entrada</option><option>Saída</option></select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Descrição</label>
-                    <input type="text" id="mov-descricao" required placeholder="Ex: Pagamento Cliente" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Categoria</label>
+                    <input type="text" id="mov-categoria" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required placeholder="Ex: Alimentação, Salário">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Data</label>
-                        <input type="date" id="mov-data" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 [color-scheme:dark]">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Categoria</label>
-                        <select id="mov-categoria" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
-                            <option value="Serviços">Serviços</option>
-                            <option value="Equipamentos">Equipamentos</option>
-                            <option value="Alimentação">Alimentação</option>
-                        </select>
-                    </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Valor (R$)</label>
+                    <input type="number" id="mov-valor" step="0.01" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required>
                 </div>
-                <button type="submit" id="btn-salvar" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg mt-4">Salvar Registro</button>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Data</label>
+                    <input type="date" id="mov-data" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Descrição</label>
+                    <input type="text" id="mov-descricao" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required placeholder="Ex: Mercado mensal">
+                </div>
+                <button type="submit" id="btn-salvar" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold hover:bg-emerald-500 transition">Salvar Registro</button>
             </form>
         </div>
     </div>
 
-    <div id="modal-cofrinho" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="titulo-modal-cofrinho" class="text-xl font-bold text-white">Novo Cofrinho</h3>
-                <button onclick="fecharModalCofrinho()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
+    <div id="modal-conta-pagar" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 id="titulo-modal-conta" class="text-lg font-bold text-white">Nova Conta</h3>
+                <button onclick="fecharModalContaPagar()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <form id="form-conta-pagar" class="space-y-4">
+                <input type="hidden" id="cp-id">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Descrição</label>
+                    <input type="text" id="cp-desc" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Valor (R$)</label>
+                    <input type="number" id="cp-valor" step="0.01" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Tipo</label>
+                    <select id="cp-tipo" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"><option>Pagar</option><option>Receber</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Vencimento</label>
+                    <input type="date" id="cp-data" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-deletar-conta" onclick="deletarContaPagar()" class="hidden flex-1 bg-red-600/20 text-red-400 border border-red-900/50 p-2.5 rounded-lg hover:bg-red-600 hover:text-white transition font-medium">Excluir</button>
+                    <button type="submit" id="btn-salvar-conta" class="flex-2 bg-emerald-600 text-white p-2.5 rounded-lg font-bold hover:bg-emerald-500 transition w-full">Salvar Conta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-cofrinho" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Gerenciar Cofrinho</h3>
+                <button onclick="fecharModalCofrinho()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-xl"></i></button>
             </div>
             <form id="form-cofrinho" class="space-y-4">
                 <input type="hidden" id="cof-id">
                 <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Nome da Meta</label>
-                    <input type="text" id="cof-nome" required placeholder="Ex: Viagem final de ano" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nome do Objetivo</label>
+                    <input type="text" id="cof-nome" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required placeholder="Ex: Trocar de carro">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Descrição</label>
-                    <input type="text" id="cof-desc" placeholder="Detalhes (Opcional)" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Descrição Breve</label>
+                    <input type="text" id="cof-desc" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Valor da Meta (R$)</label>
-                        <input type="number" id="cof-meta" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Saldo Atual (R$)</label>
-                        <input type="number" id="cof-atual" step="0.01" value="0" required class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5">
-                    </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Meta Final (R$)</label>
+                    <input type="number" id="cof-meta" step="0.01" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" required>
                 </div>
-                <button type="submit" id="btn-salvar-cof" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 transition">Salvar Cofrinho</button>
-                <button type="button" id="btn-deletar-cof" onclick="deletarCofrinho()" class="hidden w-full bg-red-900/50 hover:bg-red-900 text-red-200 font-bold py-3 rounded-lg mt-2 transition">
-                    Excluir Cofrinho
-                </button>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Valor Guardado Inicial (R$)</label>
+                    <input type="number" id="cof-atual" step="0.01" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white" value="0">
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-deletar-cof" onclick="deletarCofrinho()" class="hidden flex-1 bg-red-600/20 text-red-400 border border-red-900/50 p-2.5 rounded-lg hover:bg-red-600 hover:text-white transition font-medium">Excluir</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-2.5 rounded-lg font-bold hover:bg-blue-500 transition">Salvar Cofrinho</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <div id="modal-transacao-cofre" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-sm shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="titulo-transacao-cofre" class="text-xl font-bold text-white">Movimentar</h3>
-                <button onclick="fecharModalTransacaoCofre()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
+    <div id="modal-transacao-cofre" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 id="titulo-transacao-cofre" class="text-lg font-bold text-white">Transação do Cofre</h3>
+                <button onclick="fecharModalTransacaoCofre()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-xl"></i></button>
             </div>
+            <p id="trans-cof-nome" class="text-xs text-slate-400 bg-slate-950 p-2 rounded border border-slate-800"></p>
             <form id="form-transacao-cofre" class="space-y-4">
                 <input type="hidden" id="trans-cof-id">
                 <input type="hidden" id="trans-tipo">
-                <p id="trans-cof-nome" class="text-slate-400 text-sm mb-4 text-center"></p>
                 <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Valor (R$)</label>
-                    <input type="number" id="trans-valor" step="0.01" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 text-center text-xl font-bold">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Valor da Operação (R$)</label>
+                    <input type="number" id="trans-valor" step="0.01" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-lg font-bold" required focus>
                 </div>
-                <button type="submit" id="btn-salvar-trans" class="w-full text-white font-bold py-3 rounded-lg mt-2 transition">Confirmar</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="modal-conta-pagar" class="fixed inset-0 z-50 bg-darker/90 flex items-center justify-center hidden">
-        <div class="bg-card p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="titulo-modal-conta" class="text-xl font-bold text-white">Nova Conta</h3>
-                <button onclick="fecharModalContaPagar()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
-            </div>
-            <form id="form-conta-pagar" class="space-y-4">
-                <input type="hidden" id="cp-id">
-                <input type="text" id="cp-desc" placeholder="Descrição (ex: Aluguel)" required class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white">
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="cp-valor" placeholder="Valor" step="0.01" required class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white">
-                    <select id="cp-tipo" class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white">
-                        <option value="Pagar">A Pagar</option>
-                        <option value="Receber">A Receber</option>
-                    </select>
-                </div>
-                
-                <input type="date" id="cp-data" required class="w-full bg-slate-800 p-2.5 rounded border border-slate-600 text-white [color-scheme:dark]">
-                
-                <button type="submit" id="btn-salvar-conta" class="w-full bg-primary py-3 rounded text-white font-bold">Salvar Conta</button>
-                <button type="button" id="btn-deletar-conta" onclick="deletarContaPagar()" class="hidden w-full bg-red-900/50 hover:bg-red-900 text-red-200 font-bold py-3 rounded-lg mt-2 transition">Excluir Conta</button>
+                <button type="submit" id="btn-salvar-trans" class="w-full p-3 rounded-lg font-bold transition">Confirmar</button>
             </form>
         </div>
     </div>
