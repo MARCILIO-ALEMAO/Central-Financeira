@@ -202,6 +202,13 @@ function fecharModalContaPagar() {
 
 async function salvarContaPagar(e) {
     e.preventDefault();
+    
+    // 1. Feedback visual imediato
+    const btn = document.getElementById('btn-salvar-conta');
+    const originalText = btn.innerText;
+    btn.innerHTML = '<i class="ph ph-spinner-gap animate-spin"></i> Salvando...';
+    btn.disabled = true;
+
     const id = document.getElementById('cp-id').value;
     const isEdit = id !== '';
     const dados = {
@@ -220,9 +227,27 @@ async function salvarContaPagar(e) {
         ...(isEdit && { idKey: 'id_conta_pagar', idValue: id })
     };
 
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-    await fetchAllData();
-    fecharModalContaPagar();
+    try {
+        // 2. Chamada à API
+        const response = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            await fetchAllData();
+            fecharModalContaPagar();
+        } else {
+            alert('Erro: ' + result.message);
+        }
+    } catch(e) { 
+        alert('Erro ao salvar conta. Verifique sua conexão.'); 
+    } finally {
+        // 3. Reset do botão
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 }
 
 async function deletarContaPagar() {
