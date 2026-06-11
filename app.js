@@ -16,7 +16,7 @@ window.onload = function () {
     document.getElementById('form-transacao-cofre')?.addEventListener('submit', processarTransacaoCofre);
     document.getElementById('form-conta-pagar')?.addEventListener('submit', salvarContaPagar);
     
-    // Configurações Listener adicionado aqui para seguir o padrão de inicialização
+    // Configurações Listener
     document.getElementById('form-config-meta')?.addEventListener('submit', salvarMetaPatrimonio);
 };
 
@@ -38,6 +38,7 @@ async function handleCredentialResponse() {
     await fetchAllData();
 }
 
+// Limpa o estado local
 function logout() {
     document.getElementById('app-screen').classList.add('hidden');
     document.getElementById('login-screen').classList.remove('hidden');
@@ -68,7 +69,7 @@ function renderDashboard() {
     db.contasPagar = db.contasPagar || []; 
     db.movimentacoes = db.movimentacoes || [];
     db.cofrinhos = db.cofrinhos || [];
-    db.configuracoes = db.configuracoes || []; // Garantindo inicialização
+    db.configuracoes = db.configuracoes || [];
 
     const saldoTotal = db.contas.reduce((acc, c) => acc + (parseFloat(c.saldo_atual) || 0), 0);
     const invTotal = db.investimentos.reduce((acc, i) => acc + (parseFloat(i.valor_atual) || 0), 0);
@@ -80,7 +81,7 @@ function renderDashboard() {
     if(document.getElementById('card-cartoes')) document.getElementById('card-cartoes').innerText = formatCurrency(cartTotal);
     if(document.getElementById('card-patrimonio')) document.getElementById('card-patrimonio').innerText = formatCurrency(pat);
 
-    // Movimentações Dashboard
+    // Movimentações Dashboard (Últimas 5)
     const tabMov = document.getElementById('tabela-movimentacoes');
     if(tabMov) tabMov.innerHTML = [...db.movimentacoes].slice(-5).reverse().map(m => `
         <tr class="hover:bg-slate-800/30">
@@ -102,7 +103,7 @@ function renderDashboard() {
         `).join('');
     }
 
-    // Contas a Pagar
+    // Contas a Pagar / Receber Geral
     const tabPag = document.getElementById('tabela-contas-pagar');
     if(tabPag) {
         tabPag.innerHTML = db.contasPagar.filter(c => c.status === 'Pendente').map(c => `
@@ -142,8 +143,9 @@ function renderDashboard() {
             </div>`;
     }).join('');
 
-    // Chama o carregamento dos inputs de configurações assim que os dados renderizarem
+    // Chamadas de Inicialização Pós-Carga de Dados
     carregarConfiguracoes();
+    renderVencimentos();
 }
 
 // === MOVIMENTAÇÕES ===
@@ -276,6 +278,31 @@ async function pagarConta(idContaPagar) {
     } catch (error) { alert('Falha na comunicação ao pagar conta.'); }
 }
 
+// === COMPONENTE: PRÓXIMOS VENCIMENTOS (DASHBOARD) ===
+function renderVencimentos() {
+    const container = document.getElementById('lista-calendario');
+    if (!container) return;
+
+    // Filtra apenas contas PENDENTES
+    const pendentes = db.contasPagar.filter(c => c.status === 'Pendente');
+
+    // Ordena da mais próxima para a mais distante
+    pendentes.sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento));
+
+    // Pega as 3 primeiras
+    const proximos = pendentes.slice(0, 3);
+
+    container.innerHTML = proximos.length > 0 ? proximos.map(c => `
+        <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded border border-slate-700/50 hover:bg-slate-700 transition">
+            <div>
+                <p class="text-sm text-white font-medium">${c.descricao}</p>
+                <p class="text-[10px] text-slate-400">${formatDate(c.data_vencimento)}</p>
+            </div>
+            <p class="text-sm font-bold text-red-400">${formatCurrency(c.valor)}</p>
+        </div>
+    `).join('') : '<p class="text-slate-500 text-sm text-center py-4">Nenhum vencimento pendente.</p>';
+}
+
 // === AÇÕES DE COFRINHO ===
 function abrirModalCofrinho(id = null) {
     const m = document.getElementById('modal-cofrinho');
@@ -382,7 +409,6 @@ async function processarTransacaoCofre(e) {
 }
 
 // === MÓDULO: CONFIGURAÇÕES ===
-
 async function salvarMetaPatrimonio(e) {
     e.preventDefault();
     const metaValor = document.getElementById('config-meta-valor').value;
@@ -399,8 +425,8 @@ async function salvarMetaPatrimonio(e) {
                 data: { valor: metaValor }
             })
         });
-        alert('Meta atualizada com sucesso!');
-        await fetchAllData(); // Atualiza o DB local para refletir a nova meta se necessário
+        alert('Meta updated com sucesso!');
+        await fetchAllData(); 
     } catch(e) { alert('Erro ao salvar meta.'); }
 }
 
