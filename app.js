@@ -38,7 +38,6 @@ async function handleCredentialResponse() {
     await fetchAllData();
 }
 
-// Limpa o estado local
 function logout() {
     document.getElementById('app-screen').classList.add('hidden');
     document.getElementById('login-screen').classList.remove('hidden');
@@ -292,15 +291,21 @@ function renderVencimentos() {
     // Pega as 3 primeiras
     const proximos = pendentes.slice(0, 3);
 
-    container.innerHTML = proximos.length > 0 ? proximos.map(c => `
-        <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded border border-slate-700/50 hover:bg-slate-700 transition">
-            <div>
-                <p class="text-sm text-white font-medium">${c.descricao}</p>
-                <p class="text-[10px] text-slate-400">${formatDate(c.data_vencimento)}</p>
+    // Renderiza aplicando cores inteligentes dinamicamente (Verde para Receber, Vermelho para Pagar)
+    container.innerHTML = proximos.length > 0 ? proximos.map(c => {
+        const isReceber = c.tipo === 'Receber';
+        return `
+            <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded border border-slate-700/50 hover:bg-slate-700 transition">
+                <div>
+                    <p class="text-sm text-white font-medium">${c.descricao}</p>
+                    <p class="text-[10px] text-slate-400">${formatDate(c.data_vencimento)}</p>
+                </div>
+                <p class="text-sm font-bold ${isReceber ? 'text-emerald-400' : 'text-red-400'}">
+                    ${isReceber ? '+' : '-'} ${formatCurrency(c.valor)}
+                </p>
             </div>
-            <p class="text-sm font-bold text-red-400">${formatCurrency(c.valor)}</p>
-        </div>
-    `).join('') : '<p class="text-slate-500 text-sm text-center py-4">Nenhum vencimento pendente.</p>';
+        `;
+    }).join('') : '<p class="text-slate-500 text-sm text-center py-4">Nenhum vencimento pendente.</p>';
 }
 
 // === AÇÕES DE COFRINHO ===
@@ -425,7 +430,7 @@ async function salvarMetaPatrimonio(e) {
                 data: { valor: metaValor }
             })
         });
-        alert('Meta updated com sucesso!');
+        alert('Meta atualizada com sucesso!');
         await fetchAllData(); 
     } catch(e) { alert('Erro ao salvar meta.'); }
 }
